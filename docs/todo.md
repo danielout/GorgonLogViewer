@@ -2,13 +2,7 @@
 
 ## Actionable Tasks
 
-### Core Features (from README)
-- CDN scheme references: quick-reference view for how data is formatted in CDN jsons
-
 ### Viewer & Filtering
-- filters: control what filters are available for toggling based on log type. we'll have to figure out a way to detect the type, but that shouldn't be too hard.
-- player.log:
-  - need to do a pass to figure out a good set of filters.
 - filter config: need a good way to be able to define filters and highlights for log lines that is easy to share/contribute/change.
   - can we support live edit for this? that would be cool to be able to see what your config changes are doing in real time
 - view presets: create, edit, save, delete, share preset views for different types
@@ -27,6 +21,10 @@
 - ~~open file: should support log, txt, and json~~
 - ~~jsons: need to support collapsing down sections~~
 - ~~entities: need to be able to enter an entity id and find all lines with that id reference~~
+- ~~CDN scheme references: quick-reference view for how data is formatted in CDN jsons~~
+- ~~app should remember its last size and location when it opens~~
+- ~~context-aware filters based on log type with expanded player.log event classification~~
+- ~~player.log: good set of default filters (35+ event patterns across 10 categories)~~
 
 
 ## Need Investigation
