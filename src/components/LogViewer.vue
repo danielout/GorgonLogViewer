@@ -76,10 +76,36 @@ function hideTooltip() {
   tooltipInfo.value = null;
 }
 
+const emit = defineEmits<{
+  scrollToTime: [time: Date];
+}>();
+
+let suppressEmit = false;
+
 function onScroll() {
   if (!containerRef.value) return;
   scrollTop.value = containerRef.value.scrollTop;
+
+  // Emit the timestamp of the center visible line for paired sync
+  if (!suppressEmit) {
+    const centerIdx = Math.floor((scrollTop.value + viewportHeight.value / 2) / LINE_HEIGHT);
+    const centerLine = props.lines[Math.min(centerIdx, props.lines.length - 1)];
+    if (centerLine?.timestampDate) {
+      emit("scrollToTime", centerLine.timestampDate);
+    }
+  }
 }
+
+function scrollToIndex(index: number) {
+  if (!containerRef.value) return;
+  suppressEmit = true;
+  containerRef.value.scrollTop = index * LINE_HEIGHT;
+  scrollTop.value = containerRef.value.scrollTop;
+  // Re-enable emit after the scroll settles
+  requestAnimationFrame(() => { suppressEmit = false; });
+}
+
+defineExpose({ scrollToIndex });
 
 function updateViewportHeight() {
   if (containerRef.value) {

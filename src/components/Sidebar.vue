@@ -33,6 +33,20 @@
       </div>
     </nav>
 
+    <div class="p-2 border-t border-border">
+      <router-link
+        to="/paired"
+        class="block w-full text-left px-3 py-1.5 rounded text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+      >
+        Paired View
+      </router-link>
+      <router-link
+        to="/"
+        class="block w-full text-left px-3 py-1.5 rounded text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+      >
+        Single View
+      </router-link>
+    </div>
     <div class="p-3 border-t border-border text-xs text-text-muted">
       v0.1.0
     </div>
