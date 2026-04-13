@@ -47,6 +47,15 @@
         @input="emitFilter"
       />
 
+      <!-- Sort order toggle -->
+      <button
+        class="text-sm px-3 py-1.5 rounded border border-border bg-bg-surface text-text-secondary hover:text-text-primary transition-colors"
+        title="Toggle sort order"
+        @click="newestFirst = !newestFirst; emitFilter()"
+      >
+        {{ newestFirst ? '↑ Newest' : '↓ Oldest' }}
+      </button>
+
       <!-- Tail toggle -->
       <button
         class="text-sm px-3 py-1.5 rounded border transition-colors"
@@ -80,12 +89,12 @@
       </span>
     </div>
 
-    <!-- Row 2: Type category pills -->
-    <div v-if="groupedTypes.length > 0" class="flex items-center gap-1 px-4 py-1.5 border-t border-border/50 flex-wrap">
+    <!-- Row 2: Event category pills with event-level dropdowns -->
+    <div v-if="eventGroups.length > 0" class="flex items-center gap-1 px-4 py-1.5 border-t border-border/50 flex-wrap">
       <!-- All toggle -->
       <button
         class="text-xs px-2 py-0.5 rounded border transition-colors"
-        :class="allEnabled
+        :class="disabledEvents.size === 0
           ? 'border-accent/50 bg-accent/10 text-accent'
           : 'border-border bg-bg-surface text-text-muted hover:text-text-secondary'"
         @click="toggleAll"
@@ -96,21 +105,17 @@
       <span class="w-px h-4 bg-border/50 mx-0.5"></span>
 
       <!-- Category pills -->
-      <div v-for="group in groupedTypes" :key="group.label" class="relative" :ref="el => setCategoryRef(group.label, el as HTMLElement)">
+      <div v-for="group in eventGroups" :key="group.label" class="relative" :ref="el => setCategoryRef(group.label, el as HTMLElement)">
         <div class="flex items-center">
           <!-- Category toggle button -->
           <button
             class="text-xs pl-2 pr-1 py-0.5 rounded-l border transition-colors"
-            :class="isGroupFullyEnabled(group)
-              ? 'border-accent/50 bg-accent/10 text-accent'
-              : isGroupPartiallyEnabled(group)
-                ? 'border-accent/30 bg-accent/5 text-accent/70'
-                : 'border-border bg-bg-surface text-text-muted hover:text-text-secondary'"
-            @click="toggleGroup(group)"
+            :class="categoryClass(group)"
+            @click="toggleCategory(group)"
           >
             {{ group.label }}
-            <span v-if="isGroupPartiallyEnabled(group)" class="text-accent/50 ml-0.5">
-              {{ group.types.filter(t => enabledTypes.has(t)).length }}/{{ group.types.length }}
+            <span v-if="categoryDisabledCount(group) > 0 && categoryDisabledCount(group) < group.events.length" class="text-accent/50 ml-0.5">
+              {{ group.events.length - categoryDisabledCount(group) }}/{{ group.events.length }}
             </span>
           </button>
           <!-- Dropdown arrow -->
@@ -118,34 +123,30 @@
             class="text-xs px-1 py-0.5 rounded-r border border-l-0 transition-colors"
             :class="openDropdown === group.label
               ? 'border-accent/50 bg-accent/20 text-accent'
-              : isGroupFullyEnabled(group)
-                ? 'border-accent/50 bg-accent/10 text-accent'
-                : isGroupPartiallyEnabled(group)
-                  ? 'border-accent/30 bg-accent/5 text-accent/70'
-                  : 'border-border bg-bg-surface text-text-muted hover:text-text-secondary'"
+              : categoryClass(group)"
             @click.stop="openDropdown = openDropdown === group.label ? null : group.label"
           >
             ▾
           </button>
         </div>
 
-        <!-- Individual type dropdown -->
+        <!-- Individual event dropdown -->
         <div
           v-if="openDropdown === group.label"
-          class="absolute left-0 top-full mt-1 bg-bg-surface border border-border rounded shadow-lg z-20 p-1 min-w-40"
+          class="absolute left-0 top-full mt-1 bg-bg-surface border border-border rounded shadow-lg z-20 p-1 min-w-48 max-h-64 overflow-y-auto"
         >
           <label
-            v-for="lt in group.types"
-            :key="lt"
-            class="flex items-center gap-2 px-2 py-1 text-xs cursor-pointer hover:bg-bg-hover rounded"
+            v-for="evt in group.events"
+            :key="evt"
+            class="flex items-center gap-2 px-2 py-1 text-xs cursor-pointer hover:bg-bg-hover rounded font-mono"
           >
             <input
               type="checkbox"
-              :checked="enabledTypes.has(lt)"
-              @change="toggleType(lt)"
+              :checked="!disabledEvents.has(evt)"
+              @change="toggleEvent(evt)"
               class="accent-accent"
             />
-            <span :class="typeColorClass(lt)">{{ typeLabel(lt) }}</span>
+            <span :class="disabledEvents.has(evt) ? 'text-text-muted' : 'text-text-primary'">{{ evt }}</span>
           </label>
         </div>
       </div>
@@ -156,7 +157,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import type { LogLineType, FilterState, ViewPreset } from "../lib/types";
-import { typeColorClass, typeLabel } from "../lib/log-colors";
 import { generatedFilterCategories } from "../lib/generated/reference-entries";
 import PresetMenu from "./PresetMenu.vue";
 
@@ -165,6 +165,8 @@ const props = defineProps<{
   filteredCount: number;
   tailing: boolean;
   availableTypes: LogLineType[];
+  /** All event names found in the current file, grouped by their LogLineType */
+  availableEvents: Map<LogLineType, Set<string>>;
 }>();
 
 const emit = defineEmits<{
@@ -180,6 +182,8 @@ const isRegex = ref(false);
 const entityId = ref("");
 const timeFrom = ref("");
 const timeTo = ref("");
+const newestFirst = ref(false);
+const disabledEvents = ref(new Set<string>());
 const enabledTypes = ref(new Set<LogLineType>());
 const openDropdown = ref<string | null>(null);
 const categoryRefs = new Map<string, HTMLElement>();
@@ -189,79 +193,126 @@ function setCategoryRef(label: string, el: HTMLElement | null) {
   else categoryRefs.delete(label);
 }
 
-// Initialize enabled types to all available types
-watch(() => props.availableTypes, (types) => {
-  enabledTypes.value = new Set(types);
+// Reset disabled events when file changes
+watch(() => props.availableTypes, () => {
+  disabledEvents.value = new Set();
+  enabledTypes.value = new Set(props.availableTypes);
 }, { immediate: true });
 
-const allEnabled = computed(() =>
-  props.availableTypes.length > 0 && props.availableTypes.every((t) => enabledTypes.value.has(t))
-);
-
-interface TypeGroup {
+interface EventGroup {
   label: string;
-  types: LogLineType[];
+  categoryTypes: LogLineType[];
+  events: string[];
 }
 
-const groupedTypes = computed<TypeGroup[]>(() => {
+const eventGroups = computed<EventGroup[]>(() => {
   const available = new Set(props.availableTypes);
-  const groups: TypeGroup[] = [];
-  const used = new Set<LogLineType>();
+  const groups: EventGroup[] = [];
+  const usedTypes = new Set<LogLineType>();
 
   for (const category of generatedFilterCategories) {
     const types = category.types.filter((t) => available.has(t));
-    if (types.length > 0) {
-      groups.push({ label: category.label, types });
-      types.forEach((t) => used.add(t));
+    if (types.length === 0) continue;
+
+    // Collect all event names for these types
+    const events = new Set<string>();
+    for (const t of types) {
+      const typeEvents = props.availableEvents.get(t);
+      if (typeEvents) {
+        for (const e of typeEvents) events.add(e);
+      }
+    }
+
+    if (events.size > 0) {
+      groups.push({
+        label: category.label,
+        categoryTypes: types,
+        events: [...events].sort(),
+      });
+      types.forEach((t) => usedTypes.add(t));
     }
   }
 
-  // Catch any types not covered by a generated category
-  const ungrouped = props.availableTypes.filter((t) => !used.has(t));
-  if (ungrouped.length > 0) {
-    groups.push({ label: "Other", types: ungrouped });
+  // Catch ungrouped
+  const ungroupedEvents = new Set<string>();
+  const ungroupedTypes: LogLineType[] = [];
+  for (const t of props.availableTypes) {
+    if (usedTypes.has(t)) continue;
+    ungroupedTypes.push(t);
+    const typeEvents = props.availableEvents.get(t);
+    if (typeEvents) {
+      for (const e of typeEvents) ungroupedEvents.add(e);
+    }
+  }
+  if (ungroupedEvents.size > 0) {
+    groups.push({ label: "Other", categoryTypes: ungroupedTypes, events: [...ungroupedEvents].sort() });
   }
 
   return groups;
 });
 
-function isGroupFullyEnabled(group: TypeGroup): boolean {
-  return group.types.every((t) => enabledTypes.value.has(t));
+function categoryDisabledCount(group: EventGroup): number {
+  return group.events.filter((e) => disabledEvents.value.has(e)).length;
 }
 
-function isGroupPartiallyEnabled(group: TypeGroup): boolean {
-  const count = group.types.filter((t) => enabledTypes.value.has(t)).length;
-  return count > 0 && count < group.types.length;
+function categoryClass(group: EventGroup): string {
+  const disabled = categoryDisabledCount(group);
+  if (disabled === 0) return "border-accent/50 bg-accent/10 text-accent";
+  if (disabled === group.events.length) return "border-border bg-bg-surface text-text-muted hover:text-text-secondary";
+  return "border-accent/30 bg-accent/5 text-accent/70";
 }
 
 function toggleAll() {
-  const s = new Set(enabledTypes.value);
-  if (allEnabled.value) {
-    s.clear();
+  if (disabledEvents.value.size === 0) {
+    // Disable all
+    const all = new Set<string>();
+    for (const g of eventGroups.value) {
+      for (const e of g.events) all.add(e);
+    }
+    disabledEvents.value = all;
   } else {
-    props.availableTypes.forEach((t) => s.add(t));
+    disabledEvents.value = new Set();
   }
-  enabledTypes.value = s;
+  syncEnabledTypes();
   emitFilter();
 }
 
-function toggleGroup(group: TypeGroup) {
-  const s = new Set(enabledTypes.value);
-  if (isGroupFullyEnabled(group)) {
-    group.types.forEach((t) => s.delete(t));
+function toggleCategory(group: EventGroup) {
+  const s = new Set(disabledEvents.value);
+  const allDisabled = categoryDisabledCount(group) === group.events.length;
+  if (allDisabled) {
+    // Enable all in this category
+    for (const e of group.events) s.delete(e);
   } else {
-    group.types.forEach((t) => s.add(t));
+    // Disable all in this category
+    for (const e of group.events) s.add(e);
   }
-  enabledTypes.value = s;
+  disabledEvents.value = s;
+  syncEnabledTypes();
   emitFilter();
 }
 
-function toggleType(type: LogLineType) {
-  const s = new Set(enabledTypes.value);
-  if (s.has(type)) s.delete(type);
-  else s.add(type);
-  enabledTypes.value = s;
+function toggleEvent(eventName: string) {
+  const s = new Set(disabledEvents.value);
+  if (s.has(eventName)) s.delete(eventName);
+  else s.add(eventName);
+  disabledEvents.value = s;
+  syncEnabledTypes();
   emitFilter();
+}
+
+/** Keep enabledTypes in sync — a type is enabled if any of its events are enabled */
+function syncEnabledTypes() {
+  const types = new Set<LogLineType>();
+  for (const [type, events] of props.availableEvents) {
+    for (const e of events) {
+      if (!disabledEvents.value.has(e)) {
+        types.add(type);
+        break;
+      }
+    }
+  }
+  enabledTypes.value = types;
 }
 
 /** Get current state for saving as a preset */
@@ -283,11 +334,8 @@ function restoreFromPreset(preset: ViewPreset) {
   entityId.value = preset.entityId;
   timeFrom.value = preset.timeFrom;
   timeTo.value = preset.timeTo;
-  if (preset.enabledTypes.length > 0) {
-    enabledTypes.value = new Set(preset.enabledTypes as LogLineType[]);
-  } else {
-    enabledTypes.value = new Set(props.availableTypes);
-  }
+  disabledEvents.value = new Set();
+  enabledTypes.value = new Set(props.availableTypes);
   emitFilter();
 }
 
@@ -309,6 +357,8 @@ function emitFilter() {
     timeFrom: parseTimeInput(timeFrom.value),
     timeTo: parseTimeInput(timeTo.value),
     entityId: entityId.value.trim(),
+    disabledEvents: new Set(disabledEvents.value),
+    newestFirst: newestFirst.value,
   });
 }
 

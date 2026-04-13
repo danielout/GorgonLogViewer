@@ -27,6 +27,7 @@
         :filtered-count="filteredLines.length"
         :tailing="activeFileData.tailing"
         :available-types="availableTypes"
+        :available-events="availableEvents"
         @filter="onFilter"
         @toggle-tailing="$emit('toggleTailing', activeFileData!.path)"
         @toggle-config="showConfigPanel = !showConfigPanel"
@@ -102,6 +103,8 @@ const filter = ref<FilterState>({
   timeFrom: null,
   timeTo: null,
   entityId: "",
+  disabledEvents: new Set(),
+  newestFirst: false,
 });
 
 const activeFileData = computed(() =>
@@ -115,6 +118,17 @@ const availableTypes = computed<LogLineType[]>(() => {
     types.add(line.type);
   }
   return [...types].sort();
+});
+
+const availableEvents = computed<Map<LogLineType, Set<string>>>(() => {
+  const map = new Map<LogLineType, Set<string>>();
+  if (!activeFileData.value) return map;
+  for (const line of activeFileData.value.lines) {
+    const name = line.eventName ?? "(unclassified)";
+    if (!map.has(line.type)) map.set(line.type, new Set());
+    map.get(line.type)!.add(name);
+  }
+  return map;
 });
 
 const activeHighlightRules = computed<HighlightRule[]>(() => {
@@ -138,18 +152,20 @@ const filteredLines = computed<LogLine[]>(() => {
   if (!activeFileData.value) return [];
   let lines = activeFileData.value.lines;
 
-  // Config type restriction (intersect with filter bar types)
-  const configTypes = activeConfig.value?.enabledTypes;
-  const filterTypes = filter.value.enabledTypes;
+  // Event-level filter (disabled events)
+  const disabled = filter.value.disabledEvents;
+  if (disabled.size > 0) {
+    lines = lines.filter((l) => {
+      const name = l.eventName ?? "(unclassified)";
+      return !disabled.has(name);
+    });
+  }
 
-  if (configTypes && configTypes.length > 0 && filterTypes.size > 0) {
-    const configSet = new Set(configTypes);
-    lines = lines.filter((l) => configSet.has(l.type) && filterTypes.has(l.type));
-  } else if (configTypes && configTypes.length > 0) {
+  // Config type restriction
+  const configTypes = activeConfig.value?.enabledTypes;
+  if (configTypes && configTypes.length > 0) {
     const configSet = new Set(configTypes);
     lines = lines.filter((l) => configSet.has(l.type));
-  } else if (filterTypes.size > 0) {
-    lines = lines.filter((l) => filterTypes.has(l.type));
   }
 
   // Time filter
@@ -172,6 +188,11 @@ const filteredLines = computed<LogLine[]>(() => {
   if (searchPattern.value) {
     const re = new RegExp(searchPattern.value.source, searchPattern.value.flags);
     lines = lines.filter((l) => re.test(l.raw));
+  }
+
+  // Sort order
+  if (filter.value.newestFirst) {
+    lines = [...lines].reverse();
   }
 
   return lines;

@@ -84,90 +84,104 @@ const CHANNEL_TYPE_MAP: Record<string, LogLineType> = {
   "Action Emotes": "action",
 };
 
-/** Non-Process line patterns for player.log */
-const NON_PROCESS_PATTERNS: [RegExp, LogLineType][] = [
+/** Non-Process line patterns: [regex, type, eventName] */
+const NON_PROCESS_PATTERNS: [RegExp, LogLineType, string][] = [
   // Appearance/rendering
-  [/^Appearance /, "appearance"],
-  [/^An appearance preview/, "appearance"],
-  [/^Download appearance loop/, "appearance"],
-  [/^Successfully downloaded Texture/, "appearance"],
-  [/^LoadAssetAsync:/, "asset"],
-  [/^IsDoneLoading:/, "asset"],
-  [/^Completed /, "asset"],
-  [/^Download processing for /, "asset"],
-  [/^Ref-count cleanup of appearance/, "asset"],
+  [/^Appearance /, "appearance", "Appearance"],
+  [/^An appearance preview/, "appearance", "AppearancePreview"],
+  [/^Download appearance loop/, "appearance", "DownloadAppearance"],
+  [/^Successfully downloaded Texture/, "appearance", "TextureDownload"],
+  [/^LoadAssetAsync:/, "asset", "LoadAssetAsync"],
+  [/^IsDoneLoading:/, "asset", "IsDoneLoading"],
+  [/^Completed /, "asset", "AssetCompleted"],
+  [/^Download processing for /, "asset", "DownloadProcessing"],
+  [/^Ref-count cleanup of appearance/, "asset", "RefCountCleanup"],
   // Network
-  [/^New Network State:/, "network"],
-  [/^!!! Initializing area!/, "network"],
-  [/^Sent C_INIT2/, "network"],
-  [/^Connect succeeded/, "network"],
-  [/^Lost connection to server/, "network"],
-  [/^Logged in as character/, "network"],
-  [/^Vivox /, "network"],
-  [/^Participant /, "network"],
-  [/^Joined voice channel/, "network"],
-  [/^Left voice channel/, "network"],
+  [/^New Network State:/, "network", "NetworkState"],
+  [/^!!! Initializing area!/, "network", "InitializingArea"],
+  [/^Sent C_INIT2/, "network", "SentInit"],
+  [/^Connect succeeded/, "network", "ConnectSucceeded"],
+  [/^Lost connection to server/, "network", "LostConnection"],
+  [/^Logged in as character/, "network", "LoggedIn"],
+  [/^Vivox /, "network", "Vivox"],
+  [/^Participant /, "network", "VoiceParticipant"],
+  [/^Joined voice channel/, "network", "VoiceJoined"],
+  [/^Left voice channel/, "network", "VoiceLeft"],
   // Audio
-  [/^\d+[\d.]*: Playing sound/, "audio"],
+  [/^\d+[\d.]*: Playing sound/, "audio", "PlayingSound"],
   // Errors/warnings
-  [/^ Error:/, "error"],
-  [/^ Warning:/, "error"],
+  [/^ Error:/, "error", "Error"],
+  [/^ Warning:/, "error", "Warning"],
   // Combat (non-Process)
-  [/^entity_.*OnAttackHitMe/, "combat"],
-  [/^localPlayer.*OnAttackHitMe/, "combat"],
-  [/^UseAbility/, "combat"],
-  [/^Move to .* finished, trying again/, "combat"],
+  [/^entity_.*OnAttackHitMe/, "combat", "OnAttackHitMe"],
+  [/^localPlayer.*OnAttackHitMe/, "combat", "OnAttackHitMe"],
+  [/^UseAbility/, "combat", "UseAbility"],
+  [/^Move to .* finished, trying again/, "combat", "MoveToAbility"],
   // Emotes (non-Process, no LocalPlayer prefix)
-  [/^ProcessEmote/, "action"],
-  [/^ProcessUpdateDescription/, "system"],
-  [/^ProcessCommand /, "system"],
+  [/^ProcessEmote/, "action", "ProcessEmote"],
+  [/^ProcessUpdateDescription/, "system", "ProcessUpdateDescription"],
+  [/^ProcessCommand /, "system", "ProcessCommand"],
 ];
 
-function classifyPlayerLogLine(content: string): LogLineType {
+/** Extract event name from a Process* line */
+const PROCESS_EVENT_RE = /(?:LocalPlayer:\s*)(Process\w+)/;
+
+interface ClassifyResult {
+  type: LogLineType;
+  eventName: string | null;
+}
+
+function classifyPlayerLogLine(content: string): ClassifyResult {
   // Check Process* events first (LocalPlayer: prefix)
   for (const [pattern, type] of PLAYER_EVENT_PATTERNS) {
-    if (pattern.test(content)) return type;
+    if (pattern.test(content)) {
+      const m = content.match(PROCESS_EVENT_RE);
+      return { type, eventName: m?.[1] ?? null };
+    }
   }
 
   // Check non-Process patterns
-  for (const [pattern, type] of NON_PROCESS_PATTERNS) {
-    if (pattern.test(content)) return type;
+  for (const [pattern, type, eventName] of NON_PROCESS_PATTERNS) {
+    if (pattern.test(content)) {
+      return { type, eventName };
+    }
   }
 
-  return "system";
+  return { type: "system", eventName: null };
 }
 
 /** Classify non-timestamped lines (startup, stack traces, etc.) */
-function classifyNonTimestamped(raw: string): LogLineType {
+function classifyNonTimestamped(raw: string): ClassifyResult {
   // Stack traces
-  if (raw.startsWith("  at ") || raw.startsWith("0x")) return "error";
+  if (raw.startsWith("  at ") || raw.startsWith("0x")) return { type: "error", eventName: "StackTrace" };
   // Engine init
-  if (raw.startsWith("[Physics::Module]") || raw.startsWith("[D3D12 ") || raw.startsWith("Direct3D:")) return "asset";
-  if (raw.startsWith("Initialize engine") || raw.startsWith("Input System") || raw.startsWith("GfxDevice:")) return "asset";
-  if (raw.startsWith("<RI>") || raw.startsWith("UnloadTime:") || raw.startsWith("Unloading ")) return "asset";
-  if (raw.startsWith("Setting quality") || raw.startsWith("Loading preferences") || raw.startsWith("Applying special")) return "asset";
-  if (raw.startsWith("Shader ")) return "asset";
+  if (raw.startsWith("[Physics::Module]") || raw.startsWith("[D3D12 ") || raw.startsWith("Direct3D:")) return { type: "asset", eventName: "EngineInit" };
+  if (raw.startsWith("Initialize engine") || raw.startsWith("Input System") || raw.startsWith("GfxDevice:")) return { type: "asset", eventName: "EngineInit" };
+  if (raw.startsWith("<RI>") || raw.startsWith("UnloadTime:") || raw.startsWith("Unloading ")) return { type: "asset", eventName: "AssetUnload" };
+  if (raw.startsWith("Setting quality") || raw.startsWith("Loading preferences") || raw.startsWith("Applying special")) return { type: "asset", eventName: "Settings" };
+  if (raw.startsWith("Shader ")) return { type: "asset", eventName: "ShaderWarning" };
   // Network/auth
-  if (raw.startsWith("Steam ") || raw.startsWith("**** Logged into Steam") || raw.startsWith("Game owned")) return "network";
-  if (raw.startsWith("Servers:") || raw.startsWith("Entry #") || raw.startsWith("Parsed http") || raw.startsWith("Downloading ")) return "network";
-  if (raw.startsWith("Loading news") || raw.startsWith("Curl error")) return "network";
-  if (raw.startsWith("LOADING LEVEL")) return "network";
+  if (raw.startsWith("Steam ") || raw.startsWith("**** Logged into Steam") || raw.startsWith("Game owned")) return { type: "network", eventName: "SteamAuth" };
+  if (raw.startsWith("Servers:") || raw.startsWith("Entry #") || raw.startsWith("Parsed http") || raw.startsWith("Downloading ")) return { type: "network", eventName: "ConfigDownload" };
+  if (raw.startsWith("Loading news") || raw.startsWith("Curl error")) return { type: "network", eventName: "ConfigDownload" };
+  if (raw.startsWith("LOADING LEVEL")) return { type: "network", eventName: "LoadingLevel" };
   // Appearance
-  if (raw.startsWith("@Base") || raw.startsWith("Animator")) return "appearance";
+  if (raw.startsWith("@Base") || raw.startsWith("Animator")) return { type: "appearance", eventName: "Appearance" };
   // Errors
-  if (raw.includes("Error") || raw.includes("error")) return "error";
+  if (raw.includes("Error") || raw.includes("error")) return { type: "error", eventName: "Error" };
   // Audio
-  if (raw.startsWith("<color=pink>")) return "audio";
-  if (raw.startsWith("Bow was active")) return "combat";
-  return "system";
+  if (raw.startsWith("<color=pink>")) return { type: "audio", eventName: "MusicControl" };
+  if (raw.startsWith("Bow was active")) return { type: "combat", eventName: "WeaponState" };
+  return { type: "system", eventName: null };
 }
 
-function classifyChatLogLine(content: string): LogLineType {
+function classifyChatLogLine(content: string): ClassifyResult {
   const match = content.match(CHAT_CHANNEL);
   if (match) {
-    return CHANNEL_TYPE_MAP[match[1]] ?? "chat-custom";
+    const channel = match[1];
+    return { type: CHANNEL_TYPE_MAP[channel] ?? "chat-custom", eventName: channel };
   }
-  return "unknown";
+  return { type: "unknown", eventName: null };
 }
 
 function parseTimestampDate(ts: string): Date | null {
@@ -212,13 +226,15 @@ export function parseLogFile(content: string, filePath: string): LogLine[] {
     const contentStart = tsMatch ? tsMatch[0].length : 0;
     const content = raw.slice(contentStart);
 
+    const classified = timestamp ? classify(content) : classifyNonTimestamped(raw);
     lines.push({
       lineNumber: i + 1,
       raw,
       timestamp,
       timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
-      type: timestamp ? classify(content) : classifyNonTimestamped(raw),
+      type: classified.type,
       content,
+      eventName: classified.eventName,
     });
   }
 
@@ -243,13 +259,15 @@ export function parseLogLines(content: string, filePath: string, startLineNumber
     const contentStart = tsMatch ? tsMatch[0].length : 0;
     const lineContent = raw.slice(contentStart);
 
+    const classified = timestamp ? classify(lineContent) : classifyNonTimestamped(raw);
     lines.push({
       lineNumber: startLineNumber + i,
       raw,
       timestamp,
       timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
-      type: timestamp ? classify(lineContent) : classifyNonTimestamped(raw),
+      type: classified.type,
       content: lineContent,
+      eventName: classified.eventName,
     });
   }
 

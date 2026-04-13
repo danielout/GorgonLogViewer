@@ -51,6 +51,8 @@ export interface LogLine {
   type: LogLineType;
   /** The content after the timestamp/prefix */
   content: string;
+  /** Specific event name extracted from the line (e.g., "ProcessSetAttributes", "OnAttackHitMe") */
+  eventName: string | null;
 }
 
 /** The kind of file that was opened */
@@ -122,4 +124,8 @@ export interface FilterState {
   timeTo: Date | null;
   /** Entity ID filter — shows only lines containing this ID */
   entityId: string;
+  /** Specific event names to hide (disabled events) */
+  disabledEvents: Set<string>;
+  /** Show newest lines first */
+  newestFirst: boolean;
 }

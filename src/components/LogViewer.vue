@@ -181,9 +181,10 @@ watch(() => props.lines, (newLines, oldLines) => {
 });
 
 // Keep track of which original line number is at the top of the viewport
-watch(startIndex, () => {
-  if (props.lines.length > 0 && startIndex.value < props.lines.length) {
-    prevFirstLineNumber = props.lines[startIndex.value]?.lineNumber ?? null;
+const visibleStartIndex = computed(() => Math.floor(scrollTop.value / LINE_HEIGHT));
+watch(visibleStartIndex, () => {
+  if (props.lines.length > 0 && visibleStartIndex.value < props.lines.length) {
+    prevFirstLineNumber = props.lines[visibleStartIndex.value]?.lineNumber ?? null;
   }
 });
 
