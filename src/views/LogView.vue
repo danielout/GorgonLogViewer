@@ -1,7 +1,24 @@
 <template>
   <div v-if="activeFileData" class="flex flex-col h-full">
     <template v-if="activeFileData.kind === 'json'">
-      <JsonViewer :content="activeFileData.rawContent" />
+      <div class="flex items-center gap-2 px-4 py-2 bg-bg-secondary border-b border-border">
+        <button
+          class="text-sm px-3 py-1 rounded border transition-colors"
+          :class="jsonViewMode === 'tree' ? 'border-accent bg-accent/15 text-accent' : 'border-border bg-bg-surface text-text-secondary hover:text-text-primary'"
+          @click="jsonViewMode = 'tree'"
+        >
+          Tree
+        </button>
+        <button
+          class="text-sm px-3 py-1 rounded border transition-colors"
+          :class="jsonViewMode === 'schema' ? 'border-accent bg-accent/15 text-accent' : 'border-border bg-bg-surface text-text-secondary hover:text-text-primary'"
+          @click="jsonViewMode = 'schema'"
+        >
+          Schema
+        </button>
+      </div>
+      <JsonViewer v-if="jsonViewMode === 'tree'" :content="activeFileData.rawContent" />
+      <CdnSchemaView v-else-if="cdnSchema" :schema="cdnSchema" />
     </template>
     <template v-else>
       <FilterBar
@@ -29,9 +46,11 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { OpenFile, FilterState, LogLine } from "../lib/types";
+import { analyzeCdnSchema } from "../lib/cdn-schema";
 import FilterBar from "../components/FilterBar.vue";
 import LogViewer from "../components/LogViewer.vue";
 import JsonViewer from "../components/JsonViewer.vue";
+import CdnSchemaView from "../components/CdnSchemaView.vue";
 
 const props = defineProps<{
   activeFile: string | null;
@@ -41,6 +60,18 @@ const props = defineProps<{
 defineEmits<{
   toggleTailing: [path: string];
 }>();
+
+const jsonViewMode = ref<"tree" | "schema">("tree");
+
+const cdnSchema = computed(() => {
+  if (!activeFileData.value || activeFileData.value.kind !== "json") return null;
+  try {
+    const data = JSON.parse(activeFileData.value.rawContent);
+    return analyzeCdnSchema(data, activeFileData.value.name);
+  } catch {
+    return null;
+  }
+});
 
 const filter = ref<FilterState>({
   search: "",
