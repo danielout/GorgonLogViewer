@@ -17,6 +17,8 @@ Event reference docs, split by category. These are the source of truth — the a
 - [storage.md](log-parsing/storage.md) — Storage vault events
 - [vendors.md](log-parsing/vendors.md) — NPC vendor events
 - [world-ui.md](log-parsing/world-ui.md) — Map, UI, guild, error, titles, and misc events
+- [p2p-interaction.md](log-parsing/p2p-interaction.md) — Player-to-player trade and group events
+- [engine.md](log-parsing/engine.md) — Engine/rendering events, entity state, and stack-trace-only entries
 - [patterns.md](log-parsing/patterns.md) — Practical multi-event patterns and architecture notes
 - [log-todo.md](log-parsing/log-todo.md) — Tracking remaining log format documentation work
 

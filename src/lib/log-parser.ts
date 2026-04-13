@@ -56,6 +56,8 @@ const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
   // Mount
   [/^LocalPlayer:\s*ProcessPlayerMount/, "mount"],
   [/^LocalPlayer:\s*ProcessMountXpStatus/, "mount"],
+  // P2P interaction
+  [/^LocalPlayer:\s*ProcessP2P/, "interaction"],
   // Weather & celestial
   [/^LocalPlayer:\s*ProcessSetWeather/, "weather"],
   [/^LocalPlayer:\s*ProcessSetCelestialInfo/, "weather"],

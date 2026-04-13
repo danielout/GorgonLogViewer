@@ -260,6 +260,8 @@ export const refCategories = [
   "Combat",
   "Vendors",
   "World & UI",
+  "P2P Interaction",
+  "Engine & Rendering",
   "Chat Channels",
   "CDN Data",
   "Event Patterns",

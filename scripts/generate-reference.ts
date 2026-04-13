@@ -41,6 +41,8 @@ const TITLE_CATEGORY_MAP: Record<string, string> = {
   "Vendor Events": "Vendors",
   "World & UI Events": "World & UI",
   "Practical Patterns": "Event Patterns",
+  "Player-to-Player Interaction Events": "P2P Interaction",
+  "Engine & Rendering Events": "Engine & Rendering",
   // Legacy monolithic file
   "Player.log Event Reference": "Items & Inventory",
 };
@@ -102,6 +104,20 @@ const EVENT_CATEGORY: Record<string, string> = {
   ProcessToolCommandResponse: "World & UI",
   ProcessRemoveLoot: "Items & Inventory",
   ProcessSetRecipeReuseTimers: "Skills & Abilities",
+  // P2P
+  ProcessP2PStartInteraction: "P2P Interaction",
+  ProcessP2PRequestInteraction: "P2P Interaction",
+  ProcessP2PSetTrade: "P2P Interaction",
+  ProcessP2PEndInteraction: "P2P Interaction",
+  // Engine
+  ProcessNewPosition: "Engine & Rendering",
+  ProcessEmote: "Engine & Rendering",
+  ProcessDepuppetEntity: "Engine & Rendering",
+  ProcessEntitySpeech: "Engine & Rendering",
+  ProcessMouseEvent: "Engine & Rendering",
+  ProcessMousePress: "Engine & Rendering",
+  ProcessNewAnimation: "Engine & Rendering",
+  ProcessWalkTo: "Engine & Rendering",
 };
 
 // Tags by category
@@ -115,6 +131,8 @@ const CATEGORY_TAGS: Record<string, string[]> = {
   Combat: ["combat"],
   Vendors: ["vendor", "shop"],
   "World & UI": ["ui", "world"],
+  "P2P Interaction": ["p2p", "trade", "group"],
+  "Engine & Rendering": ["engine", "rendering", "internal"],
 };
 
 function parseMarkdown(content: string, fileDefaultCategory?: string): ParsedEvent[] {
