@@ -72,6 +72,12 @@
       >
         Single View
       </router-link>
+      <button
+        class="block w-full text-left px-3 py-1.5 rounded text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        @click="$emit('toggleReference')"
+      >
+        Reference
+      </button>
     </div>
     <div class="p-2 border-t border-border">
       <ThemePicker />
@@ -98,6 +104,7 @@ defineEmits<{
   selectFile: [path: string];
   closeFile: [path: string];
   openSample: [path: string];
+  toggleReference: [];
 }>();
 
 const samples = ref<SampleFile[]>([]);

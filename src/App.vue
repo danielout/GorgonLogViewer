@@ -7,13 +7,17 @@
       @open-file="handleOpenFile"
       @open-sample="handleOpenSampleFile"
       @close-file="handleCloseFile"
+      @toggle-reference="showReference = !showReference"
     />
-    <main class="flex-1 flex flex-col min-w-0">
-      <router-view
-        :active-file="activeFile"
-        :open-files="openFiles"
-        @toggle-tailing="handleToggleTailing"
-      />
+    <main class="flex-1 flex min-w-0">
+      <div class="flex-1 flex flex-col min-w-0">
+        <router-view
+          :active-file="activeFile"
+          :open-files="openFiles"
+          @toggle-tailing="handleToggleTailing"
+        />
+      </div>
+      <ReferencePane v-if="showReference" @close="showReference = false" />
     </main>
   </div>
 </template>
@@ -26,9 +30,11 @@ import { parseLogFile, parseLogLines } from "./lib/log-parser";
 import type { OpenFile, FileKind } from "./lib/types";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import Sidebar from "./components/Sidebar.vue";
+import ReferencePane from "./components/ReferencePane.vue";
 
 const openFiles = ref<OpenFile[]>([]);
 const activeFile = ref<string | null>(null);
+const showReference = ref(false);
 let unlistenTail: UnlistenFn | null = null;
 
 onMounted(async () => {
