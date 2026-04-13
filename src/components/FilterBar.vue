@@ -83,10 +83,15 @@
         @load="(preset: ViewPreset) => $emit('loadPreset', preset)"
       />
 
-      <!-- Line count -->
-      <span class="text-xs text-text-muted ml-auto whitespace-nowrap">
+      <!-- Position and line count -->
+      <div class="text-xs text-text-muted ml-auto whitespace-nowrap text-right">
+        <span v-if="currentLine">
+          <span class="text-text-secondary">Ln {{ currentLine }}</span>
+          <span v-if="currentTimestamp" class="text-log-timestamp ml-1">{{ currentTimestamp }}</span>
+          <span class="mx-1">&middot;</span>
+        </span>
         {{ filteredCount }} / {{ totalCount }} lines
-      </span>
+      </div>
     </div>
 
     <!-- Row 2: Event category pills with event-level dropdowns -->
@@ -167,6 +172,10 @@ const props = defineProps<{
   availableTypes: LogLineType[];
   /** All event names found in the current file, grouped by their LogLineType */
   availableEvents: Map<LogLineType, Set<string>>;
+  /** Current line number at the top of the viewport */
+  currentLine: number | null;
+  /** Timestamp of the current line */
+  currentTimestamp: string | null;
 }>();
 
 const emit = defineEmits<{

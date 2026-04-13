@@ -82,6 +82,7 @@ function hideTooltip() {
 const emit = defineEmits<{
   scrollToTime: [time: Date];
   openReference: [name: string];
+  positionChange: [lineNumber: number | null, timestamp: string | null];
 }>();
 
 let suppressEmit = false;
@@ -189,7 +190,21 @@ watch(() => props.lines, (newLines, oldLines) => {
 const visibleStartIndex = computed(() => Math.floor(scrollTop.value / LINE_HEIGHT));
 watch(visibleStartIndex, () => {
   if (props.lines.length > 0 && visibleStartIndex.value < props.lines.length) {
-    prevFirstLineNumber = props.lines[visibleStartIndex.value]?.lineNumber ?? null;
+    const line = props.lines[visibleStartIndex.value];
+    prevFirstLineNumber = line?.lineNumber ?? null;
+    // Find the nearest timestamp (current line or scan backwards)
+    let ts: string | null = null;
+    if (line?.timestamp) {
+      ts = line.timestamp;
+    } else {
+      for (let i = visibleStartIndex.value - 1; i >= 0; i--) {
+        if (props.lines[i]?.timestamp) {
+          ts = props.lines[i].timestamp;
+          break;
+        }
+      }
+    }
+    emit("positionChange", line?.lineNumber ?? null, ts);
   }
 });
 

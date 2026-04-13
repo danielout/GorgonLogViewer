@@ -28,6 +28,8 @@
         :tailing="activeFileData.tailing"
         :available-types="availableTypes"
         :available-events="availableEvents"
+        :current-line="currentLine"
+        :current-timestamp="currentTimestamp"
         @filter="onFilter"
         @toggle-tailing="$emit('toggleTailing', activeFileData!.path)"
         @toggle-config="showConfigPanel = !showConfigPanel"
@@ -42,6 +44,7 @@
           :highlight-rules="activeHighlightRules"
           :auto-scroll="activeFileData.tailing"
           @open-reference="$emit('openReference', $event)"
+          @position-change="onPositionChange"
         />
         <FilterConfigPanel
           v-if="showConfigPanel"
@@ -85,6 +88,13 @@ const jsonViewMode = ref<"tree" | "schema">("tree");
 const showConfigPanel = ref(false);
 const activeConfig = ref<FilterConfig | null>(null);
 const filterBarRef = ref<InstanceType<typeof FilterBar> | null>(null);
+const currentLine = ref<number | null>(null);
+const currentTimestamp = ref<string | null>(null);
+
+function onPositionChange(lineNumber: number | null, timestamp: string | null) {
+  currentLine.value = lineNumber;
+  currentTimestamp.value = timestamp;
+}
 
 const cdnSchema = computed(() => {
   if (!activeFileData.value || activeFileData.value.kind !== "json") return null;
