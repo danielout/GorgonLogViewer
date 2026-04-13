@@ -8,7 +8,7 @@
  * Run: npx tsx scripts/generate-reference.ts
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { join } from "path";
 
 interface RefField {
@@ -29,9 +29,20 @@ interface ParsedEvent {
   tags: string[];
 }
 
-const CATEGORY_MAP: Record<string, string> = {
-  "Event Types": "Items & Inventory", // default, overridden per-event below
+/** Map from doc file # title → default category for events in that file */
+const TITLE_CATEGORY_MAP: Record<string, string> = {
+  "Items & Inventory Events": "Items & Inventory",
+  "Skills & Abilities Events": "Skills & Abilities",
   "NPC Interaction Events": "NPC Interaction",
+  "Player Status Events": "Player Status",
+  "Effects & Buffs Events": "Effects & Buffs",
+  "Quest Events": "Quests",
+  "Storage Events": "Items & Inventory",
+  "Vendor Events": "Vendors",
+  "World & UI Events": "World & UI",
+  "Practical Patterns": "Event Patterns",
+  // Legacy monolithic file
+  "Player.log Event Reference": "Items & Inventory",
 };
 
 // Map event names to categories
@@ -106,7 +117,7 @@ const CATEGORY_TAGS: Record<string, string[]> = {
   "World & UI": ["ui", "world"],
 };
 
-function parseMarkdown(content: string): ParsedEvent[] {
+function parseMarkdown(content: string, fileDefaultCategory?: string): ParsedEvent[] {
   const events: ParsedEvent[] = [];
   // Split on ### headers
   const sections = content.split(/^### /m).slice(1);
@@ -120,7 +131,7 @@ function parseMarkdown(content: string): ParsedEvent[] {
     if (!headerMatch) continue;
 
     const [, name, summary] = headerMatch;
-    const category = EVENT_CATEGORY[name] ?? "Other";
+    const category = EVENT_CATEGORY[name] ?? fileDefaultCategory ?? "Other";
 
     // Parse the rest of the section
     let format: string | null = null;
@@ -247,7 +258,7 @@ function parseMarkdown(content: string): ParsedEvent[] {
 function generateTypeScript(events: ParsedEvent[]): string {
   const lines: string[] = [];
   lines.push("// AUTO-GENERATED — do not edit manually");
-  lines.push("// Source: docs/log-parsing/player-log-events.md");
+  lines.push("// Source: docs/log-parsing/*.md");
   lines.push(`// Generated: ${new Date().toISOString()}`);
   lines.push("// Run: npm run generate-reference");
   lines.push("");
@@ -287,16 +298,36 @@ function generateTypeScript(events: ParsedEvent[]): string {
 
 // Main
 const projectRoot = join(import.meta.dirname!, "..");
-const docsPath = join(projectRoot, "docs", "log-parsing", "player-log-events.md");
+const docsDir = join(projectRoot, "docs", "log-parsing");
 const outDir = join(projectRoot, "src", "lib", "generated");
 const outPath = join(outDir, "reference-entries.ts");
 
-console.log("Reading", docsPath);
-const markdown = readFileSync(docsPath, "utf-8");
-const events = parseMarkdown(markdown);
-console.log(`Parsed ${events.length} events`);
+const SKIP_FILES = new Set(["log-todo.md"]);
+
+const allEvents: ParsedEvent[] = [];
+
+const mdFiles = readdirSync(docsDir)
+  .filter((f) => f.endsWith(".md") && !SKIP_FILES.has(f))
+  .sort();
+
+for (const file of mdFiles) {
+  const filePath = join(docsDir, file);
+  console.log("Reading", file);
+  const markdown = readFileSync(filePath, "utf-8");
+
+  // Extract the # title to determine default category
+  const titleMatch = markdown.match(/^# (.+)$/m);
+  const title = titleMatch?.[1] ?? "";
+  const fileCategory = TITLE_CATEGORY_MAP[title];
+
+  const events = parseMarkdown(markdown, fileCategory);
+  console.log(`  → ${events.length} events`);
+  allEvents.push(...events);
+}
+
+console.log(`Total: ${allEvents.length} events from ${mdFiles.length} files`);
 
 mkdirSync(outDir, { recursive: true });
-const output = generateTypeScript(events);
+const output = generateTypeScript(allEvents);
 writeFileSync(outPath, output, "utf-8");
 console.log("Wrote", outPath);
