@@ -8,6 +8,9 @@
 - player.log:
   - need to do a pass to figure out a good set of filters.
   - entities: need to be able to enter an entity id and find all lines with that id reference
-  - 
+- filter config: need a good way to be able to define filters and highlights for log lines that is easy to share/contribute/change.
+  - can we support live edit for this? that would be cool to be able to see what your config changes are doing in real time
+- view presets: create, edit, save, delete, share preset views for different types
+- 
 
 ## Need Investigation
