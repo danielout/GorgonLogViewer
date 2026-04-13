@@ -1,3 +1,5 @@
-need a file for each log type with how that type is formatted and what the messages are
+# Log Parsing — Remaining Work
 
-this might get too huge, might be a folder for each type with individual docs within? will see
+All known Player.log event types from available sample logs are now documented (110+ events across 14 files). Non-Process events and startup/system lines are also covered.
+
+To add new events as they're discovered, see [Contributing Events](../contributing-events.md).
