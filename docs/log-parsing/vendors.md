@@ -63,3 +63,29 @@
 | `maxGold` | u32 | Vendor's maximum gold capacity |
 
 **When it fires:** After every vendor buy/sell transaction. `currentGold` decreases when the vendor buys from you (pays you gold), increases when you buy from them.
+
+### ProcessVendorRemoveItem — Item removed from vendor stock
+
+```
+[HH:MM:SS] LocalPlayer: ProcessVendorRemoveItem(instanceId)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `instanceId` | u64 | Instance ID of the item removed from the vendor's display |
+
+**When it fires:** An item is fully purchased or otherwise removed from the vendor's displayed stock.
+
+### ProcessBarterScreen — Barter/trade screen opened
+
+```
+[HH:MM:SS] LocalPlayer: ProcessBarterScreen(npcId, "dialogue", BarterInfo[], System.Int32[], System.String[], cost)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `npcId` | u32 | NPC entity ID |
+| `dialogue` | string | NPC's barter dialogue (may include HTML color tags and trade count info) |
+| `cost` | i32 | Cost modifier |
+
+**When it fires:** Player opens a barter/trade screen with an NPC. Some NPCs offer item-for-item trades with daily limits, shown in the dialogue text.

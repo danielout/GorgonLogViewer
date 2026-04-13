@@ -64,3 +64,16 @@
 **When it fires:** On login. List of completed tutorial/directed goals.
 
 **NOT YET PARSED.**
+
+### ProcessFailQuest — Quest failed or abandoned
+
+```
+[HH:MM:SS] LocalPlayer: ProcessFailQuest(entityId, questId)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `entityId` | u32 | Player entity ID |
+| `questId` | u32 | Quest identifier |
+
+**When it fires:** Player fails or abandons a quest.

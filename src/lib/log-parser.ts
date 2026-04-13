@@ -26,6 +26,8 @@ const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
   [/^LocalPlayer:\s*Process(?:Load|Update|Show)Recipe/, "skill"],
   [/^LocalPlayer:\s*ProcessSetStarredRecipes/, "skill"],
   [/^LocalPlayer:\s*ProcessTrainingScreen/, "skill"],
+  [/^LocalPlayer:\s*ProcessDoDelayLoop/, "skill"],
+  [/^LocalPlayer:\s*Process(?:Set|Delta)AbilityTimer/, "skill"],
   // Quests
   [/^LocalPlayer:\s*Process(?:Add|Load|Update|Complete|Fail|Select)Quest/, "quest"],
   [/^LocalPlayer:\s*ProcessCompleteDirectedGoals/, "quest"],
@@ -54,8 +56,9 @@ const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
   // Mount
   [/^LocalPlayer:\s*ProcessPlayerMount/, "mount"],
   [/^LocalPlayer:\s*ProcessMountXpStatus/, "mount"],
-  // Weather
+  // Weather & celestial
   [/^LocalPlayer:\s*ProcessSetWeather/, "weather"],
+  [/^LocalPlayer:\s*ProcessSetCelestialInfo/, "weather"],
 ];
 
 /** Chat log channel → type mapping */

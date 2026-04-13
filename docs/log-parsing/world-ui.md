@@ -163,3 +163,76 @@
 **When it fires:** Item removed from player's vendor stall.
 
 **NOT YET PARSED.**
+
+### ProcessMapPinAdd — Map pin/marker added
+
+```
+[HH:MM:SS] LocalPlayer: ProcessMapPinAdd(mapId, pinType, iconIndex, position, "label")
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `mapId` | u32 | Map identifier |
+| `pinType` | u32 | Pin type (0 = default, 1+ = special) |
+| `iconIndex` | u32 | Icon to display (0 = default, 7 = named POI) |
+| `position` | vec3 | World position (x, y, z) |
+| `label` | string | Pin label text (empty string for unlabeled pins) |
+
+**When it fires:** Map pins are added, such as quest markers, player-placed pins, or system markers like "Horse Thieves" POI locations.
+
+### ProcessInputBox — Input dialog shown
+
+```
+[HH:MM:SS] LocalPlayer: ProcessInputBox(sourceId, inputType, "title", "prompt", "replyLabel", "", "", minLength, maxLength, System.Int32[], System.String[], flags)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `sourceId` | i32 | Source entity or system ID (-9 = system) |
+| `inputType` | enum | Input type (e.g., `EnterNumber`, `EnterText`) |
+| `title` | string | Dialog title (e.g., "Teleportation Machine") |
+| `prompt` | string | Prompt text for the player |
+| `minLength` | u32 | Minimum input length |
+| `maxLength` | u32 | Maximum input length |
+
+**When it fires:** A dialog box prompts the player for text or number input, such as teleportation circle coordinates.
+
+### ProcessMusicPerformance — Music performance state
+
+```
+[HH:MM:SS] LocalPlayer: ProcessMusicPerformance(MusicPerformanceManager+PerformanceInfo)
+```
+
+**When it fires:** Music performance system updates. Fires frequently while the performance system is active. The data is opaque (C# ToString of internal class).
+
+### ProcessDoSpecialFX — Special effect triggered
+
+```
+[HH:MM:SS] LocalPlayer: ProcessDoSpecialFX("effectPath", position)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `effectPath` | string | Particle effect path (e.g., "ParticlePath") |
+| `position` | vec3 | World position where the effect is spawned (x, y, z) |
+
+**When it fires:** Visual particle effects are triggered at a world position.
+
+### ProcessUpdateDescription — Interactable entity description update
+
+```
+[HH:MM:SS] ProcessUpdateDescription(entityId, "name", "description", "actionLabel", actionType, "modelInfo", flags)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `entityId` | u32 | Entity ID |
+| `name` | string | Display name (e.g., "Thirsty Daisy", "Blooming Poppy") |
+| `description` | string | Current state description |
+| `actionLabel` | string | Action button text (e.g., "Water Daisy", "Pick Poppy") |
+| `actionType` | enum | Action type (e.g., `UseItem`) |
+| `modelInfo` | string | Visual model with scale (e.g., "Flower5(Scale=0.65)") |
+
+**When it fires:** Interactable world entities (plants, gardening nodes, etc.) update their name, description, or available action. Common with the gardening system.
+
+**Note:** This event does NOT have the `LocalPlayer:` prefix — it fires directly as `ProcessUpdateDescription`.

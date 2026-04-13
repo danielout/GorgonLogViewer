@@ -179,3 +179,74 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 **When it fires:** Player initiates an attack.
 
 **NOT YET PARSED.**
+
+### ProcessDeathMessage — Player death
+
+```
+[HH:MM:SS] LocalPlayer: ProcessDeathMessage("causeOfDeath", deathPenalty1, bool1, deathPenalty2, bool2)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `causeOfDeath` | string | Description of how the player died (e.g., "Poisoned", "Mauled by a wild animal", "Splashed with acid") |
+| `deathPenalty1` | u32 | Death penalty value |
+| `bool1` | bool | Unknown flag |
+| `deathPenalty2` | u32 | Second death penalty value |
+| `bool2` | bool | Unknown flag |
+
+**When it fires:** Player dies from any cause. Followed by ProcessRepsawn when the player respawns.
+
+### ProcessRepsawn — Player respawn
+
+```
+[HH:MM:SS] LocalPlayer: ProcessRepsawn(position, rotation, timestamp, entityId)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `position` | vec3 | Respawn world position (x, y, z) |
+| `rotation` | quat | Respawn orientation quaternion |
+| `timestamp` | u64 | Server timestamp |
+| `entityId` | u32 | Player entity ID |
+
+**When it fires:** Player respawns after dying. Note the misspelling "Repsawn" is in the game client itself.
+
+### ProcessSetCelestialInfo — Moon phase / celestial state
+
+```
+[HH:MM:SS] LocalPlayer: ProcessSetCelestialInfo(moonPhase)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `moonPhase` | enum | Current moon phase (e.g., `WaningCrescentMoon`, `FullMoon`) |
+
+**When it fires:** On login and when the moon phase changes. Relevant for lunar-dependent game mechanics.
+
+### ProcessAttachToFurniture — Player sits/lies on furniture
+
+```
+[HH:MM:SS] LocalPlayer: ProcessAttachToFurniture(entityId, slotIndex, furnitureType, param1, param2)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `entityId` | u32 | Furniture entity ID |
+| `slotIndex` | u32 | Seat/slot on the furniture |
+| `furnitureType` | enum | Type of furniture (e.g., `Bed`, `Chair`) |
+
+**When it fires:** Player interacts with world furniture (beds, chairs, etc.)
+
+### ProcessSetHuntingGroup — Party/group state
+
+```
+[HH:MM:SS] LocalPlayer: ProcessSetHuntingGroup(groupId, "groupName", hash, memberIds, memberNames)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `groupId` | u32 | Group identifier |
+| `groupName` | string | Group name |
+| `hash` | i32 | Group state hash |
+
+**When it fires:** Player joins, leaves, or group state changes (member joins/leaves).
