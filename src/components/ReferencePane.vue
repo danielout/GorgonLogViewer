@@ -40,6 +40,7 @@
           <div
             v-for="entry in entriesForCategory(category)"
             :key="entry.name"
+            :data-ref-entry="entry.name"
             class="border-t border-border/30"
           >
             <!-- Entry header -->
@@ -101,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { allRefEntries, refCategories, type RefEntry } from "../lib/reference-data";
 import ResizeHandle from "./ResizeHandle.vue";
 
@@ -156,4 +157,27 @@ function toggleEntry(name: string) {
   else s.add(name);
   expandedEntries.value = s;
 }
+
+function scrollToEntry(name: string) {
+  // Clear search, expand the entry's category, expand the entry
+  searchQuery.value = "";
+  const entry = allRefEntries.find((e) => e.name === name);
+  if (!entry) return;
+
+  const cats = new Set(expandedCategories.value);
+  cats.add(entry.category);
+  expandedCategories.value = cats;
+
+  const ents = new Set(expandedEntries.value);
+  ents.add(name);
+  expandedEntries.value = ents;
+
+  // Scroll to the entry after DOM updates
+  nextTick(() => {
+    const el = document.querySelector(`[data-ref-entry="${name}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+defineExpose({ scrollToEntry });
 </script>

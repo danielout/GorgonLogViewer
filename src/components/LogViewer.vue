@@ -23,7 +23,7 @@
         </div>
       </div>
     </div>
-    <LineTooltip :info="tooltipInfo" :x="tooltipX" :y="tooltipY" />
+    <LineTooltip :info="tooltipInfo" :x="tooltipX" :y="tooltipY" @open-reference="$emit('openReference', $event)" />
   </div>
 </template>
 
@@ -81,6 +81,7 @@ function hideTooltip() {
 
 const emit = defineEmits<{
   scrollToTime: [time: Date];
+  openReference: [name: string];
 }>();
 
 let suppressEmit = false;

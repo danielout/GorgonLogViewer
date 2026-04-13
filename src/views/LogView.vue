@@ -40,6 +40,7 @@
           :search-pattern="searchPattern"
           :highlight-rules="activeHighlightRules"
           :auto-scroll="activeFileData.tailing"
+          @open-reference="$emit('openReference', $event)"
         />
         <FilterConfigPanel
           v-if="showConfigPanel"
@@ -76,6 +77,7 @@ const props = defineProps<{
 
 defineEmits<{
   toggleTailing: [path: string];
+  openReference: [name: string];
 }>();
 
 const jsonViewMode = ref<"tree" | "schema">("tree");

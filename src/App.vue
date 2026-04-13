@@ -15,15 +15,16 @@
           :active-file="activeFile"
           :open-files="openFiles"
           @toggle-tailing="handleToggleTailing"
+          @open-reference="handleOpenReference"
         />
       </div>
-      <ReferencePane v-if="showReference" @close="showReference = false" />
+      <ReferencePane v-if="showReference" ref="referencePaneRef" @close="showReference = false" />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getDefaultLogPath, readLogFile, startTailing, stopTailing, onTailUpdate } from "./lib/tauri-bridge";
 import { parseLogFile, parseLogLines } from "./lib/log-parser";
@@ -35,6 +36,14 @@ import ReferencePane from "./components/ReferencePane.vue";
 const openFiles = ref<OpenFile[]>([]);
 const activeFile = ref<string | null>(null);
 const showReference = ref(false);
+const referencePaneRef = ref<InstanceType<typeof ReferencePane> | null>(null);
+
+async function handleOpenReference(name: string) {
+  showReference.value = true;
+  // Wait for the pane to mount if it wasn't open yet
+  await nextTick();
+  referencePaneRef.value?.scrollToEntry(name);
+}
 let unlistenTail: UnlistenFn | null = null;
 
 onMounted(async () => {

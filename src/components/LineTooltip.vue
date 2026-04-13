@@ -1,8 +1,9 @@
 <template>
   <div
     v-if="info"
-    class="absolute z-20 bg-bg-surface border border-border rounded shadow-lg p-3 max-w-md text-sm pointer-events-none"
+    class="absolute z-20 bg-bg-surface border border-border rounded shadow-lg p-3 max-w-md text-sm cursor-pointer hover:border-accent transition-colors"
     :style="{ top: y + 'px', left: x + 'px' }"
+    @click="$emit('openReference', info.name)"
   >
     <p class="font-bold text-accent mb-1">{{ info.name }}</p>
     <p class="text-text-primary mb-2">{{ info.summary }}</p>
@@ -13,6 +14,7 @@
         <span class="text-syn-number">{{ field.type }}</span>
       </div>
     </div>
+    <p class="text-xs text-text-muted mt-2 italic">Click to open in Reference</p>
   </div>
 </template>
 
@@ -23,5 +25,9 @@ defineProps<{
   info: EventInfo | null;
   x: number;
   y: number;
+}>();
+
+defineEmits<{
+  openReference: [name: string];
 }>();
 </script>
