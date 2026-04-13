@@ -5,6 +5,7 @@
       :active-file="activeFile"
       @select-file="activeFile = $event"
       @open-file="handleOpenFile"
+      @open-sample="handleOpenSampleFile"
       @close-file="handleCloseFile"
     />
     <main class="flex-1 flex flex-col min-w-0">
@@ -69,20 +70,7 @@ function detectFileKind(fileName: string): FileKind {
   return "text";
 }
 
-async function handleOpenFile() {
-  const selected = await open({
-    multiple: false,
-    filters: [
-      { name: "Log Files", extensions: ["log", "txt"] },
-      { name: "JSON Files", extensions: ["json"] },
-      { name: "All Files", extensions: ["*"] },
-    ],
-  });
-
-  if (!selected) return;
-
-  const filePath = selected as string;
-
+async function openFilePath(filePath: string) {
   if (openFiles.value.some((f) => f.path === filePath)) {
     activeFile.value = filePath;
     return;
@@ -103,6 +91,24 @@ async function handleOpenFile() {
   });
 
   activeFile.value = filePath;
+}
+
+async function handleOpenFile() {
+  const selected = await open({
+    multiple: false,
+    filters: [
+      { name: "Log Files", extensions: ["log", "txt"] },
+      { name: "JSON Files", extensions: ["json"] },
+      { name: "All Files", extensions: ["*"] },
+    ],
+  });
+
+  if (!selected) return;
+  await openFilePath(selected as string);
+}
+
+async function handleOpenSampleFile(path: string) {
+  await openFilePath(path);
 }
 
 async function handleToggleTailing(path: string) {

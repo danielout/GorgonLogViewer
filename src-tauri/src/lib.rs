@@ -105,6 +105,62 @@ fn stop_tailing(path: String, app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[derive(serde::Serialize)]
+struct SampleFile {
+    name: String,
+    path: String,
+    category: String,
+}
+
+#[tauri::command]
+fn list_sample_files(app: AppHandle) -> Result<Vec<SampleFile>, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("Failed to get resource dir: {}", e))?;
+
+    let samples_dir = resource_dir.join("sampleFiles");
+    if !samples_dir.exists() {
+        return Ok(vec![]);
+    }
+
+    let mut files = Vec::new();
+
+    // Walk category directories
+    let entries = fs::read_dir(&samples_dir)
+        .map_err(|e| format!("Failed to read samples dir: {}", e))?;
+
+    for entry in entries.flatten() {
+        let category_path = entry.path();
+        if !category_path.is_dir() {
+            continue;
+        }
+        let category = entry.file_name().to_string_lossy().to_string();
+
+        // Walk files in category (and subdirectories for PairedLogs)
+        walk_sample_dir(&category_path, &category, &mut files);
+    }
+
+    Ok(files)
+}
+
+fn walk_sample_dir(dir: &std::path::Path, category: &str, files: &mut Vec<SampleFile>) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                walk_sample_dir(&path, category, files);
+            } else {
+                files.push(SampleFile {
+                    name: entry.file_name().to_string_lossy().to_string(),
+                    path: path.to_string_lossy().to_string(),
+                    category: category.to_string(),
+                });
+            }
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -119,7 +175,8 @@ pub fn run() {
             get_default_log_path,
             read_log_file,
             start_tailing,
-            stop_tailing
+            stop_tailing,
+            list_sample_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

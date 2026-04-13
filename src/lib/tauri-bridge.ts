@@ -21,6 +21,17 @@ export async function stopTailing(path: string): Promise<void> {
   return invoke("stop_tailing", { path });
 }
 
+export interface SampleFile {
+  name: string;
+  path: string;
+  category: string;
+}
+
+/** List bundled sample files */
+export async function listSampleFiles(): Promise<SampleFile[]> {
+  return invoke<SampleFile[]>("list_sample_files");
+}
+
 export interface TailUpdate {
   path: string;
   content: string;
