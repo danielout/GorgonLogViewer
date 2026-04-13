@@ -28,6 +28,12 @@ export type LogLineType =
   | "vendor"
   | "mount"
   | "weather"
+  // Engine & system sub-categories
+  | "appearance"
+  | "network"
+  | "audio"
+  | "error"
+  | "asset"
   | "system"
   | "unknown";
 

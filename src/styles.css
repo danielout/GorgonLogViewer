@@ -38,6 +38,11 @@
   --color-log-vendor: #fab387;
   --color-log-mount: #94e2d5;
   --color-log-weather: #89dceb;
+  --color-log-appearance: #7f849c;
+  --color-log-network: #74c7ec;
+  --color-log-audio: #f5c2e7;
+  --color-log-error: #f38ba8;
+  --color-log-asset: #585b70;
   --color-log-timestamp: #585b70;
 
   /* Syntax highlighting for arguments */

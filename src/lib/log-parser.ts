@@ -84,10 +84,81 @@ const CHANNEL_TYPE_MAP: Record<string, LogLineType> = {
   "Action Emotes": "action",
 };
 
+/** Non-Process line patterns for player.log */
+const NON_PROCESS_PATTERNS: [RegExp, LogLineType][] = [
+  // Appearance/rendering
+  [/^Appearance /, "appearance"],
+  [/^An appearance preview/, "appearance"],
+  [/^Download appearance loop/, "appearance"],
+  [/^Successfully downloaded Texture/, "appearance"],
+  [/^LoadAssetAsync:/, "asset"],
+  [/^IsDoneLoading:/, "asset"],
+  [/^Completed /, "asset"],
+  [/^Download processing for /, "asset"],
+  [/^Ref-count cleanup of appearance/, "asset"],
+  // Network
+  [/^New Network State:/, "network"],
+  [/^!!! Initializing area!/, "network"],
+  [/^Sent C_INIT2/, "network"],
+  [/^Connect succeeded/, "network"],
+  [/^Lost connection to server/, "network"],
+  [/^Logged in as character/, "network"],
+  [/^Vivox /, "network"],
+  [/^Participant /, "network"],
+  [/^Joined voice channel/, "network"],
+  [/^Left voice channel/, "network"],
+  // Audio
+  [/^\d+[\d.]*: Playing sound/, "audio"],
+  // Errors/warnings
+  [/^ Error:/, "error"],
+  [/^ Warning:/, "error"],
+  // Combat (non-Process)
+  [/^entity_.*OnAttackHitMe/, "combat"],
+  [/^localPlayer.*OnAttackHitMe/, "combat"],
+  [/^UseAbility/, "combat"],
+  [/^Move to .* finished, trying again/, "combat"],
+  // Emotes (non-Process, no LocalPlayer prefix)
+  [/^ProcessEmote/, "action"],
+  [/^ProcessUpdateDescription/, "system"],
+  [/^ProcessCommand /, "system"],
+];
+
 function classifyPlayerLogLine(content: string): LogLineType {
+  // Check Process* events first (LocalPlayer: prefix)
   for (const [pattern, type] of PLAYER_EVENT_PATTERNS) {
     if (pattern.test(content)) return type;
   }
+
+  // Check non-Process patterns
+  for (const [pattern, type] of NON_PROCESS_PATTERNS) {
+    if (pattern.test(content)) return type;
+  }
+
+  return "system";
+}
+
+/** Classify non-timestamped lines (startup, stack traces, etc.) */
+function classifyNonTimestamped(raw: string): LogLineType {
+  // Stack traces
+  if (raw.startsWith("  at ") || raw.startsWith("0x")) return "error";
+  // Engine init
+  if (raw.startsWith("[Physics::Module]") || raw.startsWith("[D3D12 ") || raw.startsWith("Direct3D:")) return "asset";
+  if (raw.startsWith("Initialize engine") || raw.startsWith("Input System") || raw.startsWith("GfxDevice:")) return "asset";
+  if (raw.startsWith("<RI>") || raw.startsWith("UnloadTime:") || raw.startsWith("Unloading ")) return "asset";
+  if (raw.startsWith("Setting quality") || raw.startsWith("Loading preferences") || raw.startsWith("Applying special")) return "asset";
+  if (raw.startsWith("Shader ")) return "asset";
+  // Network/auth
+  if (raw.startsWith("Steam ") || raw.startsWith("**** Logged into Steam") || raw.startsWith("Game owned")) return "network";
+  if (raw.startsWith("Servers:") || raw.startsWith("Entry #") || raw.startsWith("Parsed http") || raw.startsWith("Downloading ")) return "network";
+  if (raw.startsWith("Loading news") || raw.startsWith("Curl error")) return "network";
+  if (raw.startsWith("LOADING LEVEL")) return "network";
+  // Appearance
+  if (raw.startsWith("@Base") || raw.startsWith("Animator")) return "appearance";
+  // Errors
+  if (raw.includes("Error") || raw.includes("error")) return "error";
+  // Audio
+  if (raw.startsWith("<color=pink>")) return "audio";
+  if (raw.startsWith("Bow was active")) return "combat";
   return "system";
 }
 
@@ -146,7 +217,7 @@ export function parseLogFile(content: string, filePath: string): LogLine[] {
       raw,
       timestamp,
       timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
-      type: timestamp ? classify(content) : "system",
+      type: timestamp ? classify(content) : classifyNonTimestamped(raw),
       content,
     });
   }
@@ -177,7 +248,7 @@ export function parseLogLines(content: string, filePath: string, startLineNumber
       raw,
       timestamp,
       timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
-      type: timestamp ? classify(lineContent) : "system",
+      type: timestamp ? classify(lineContent) : classifyNonTimestamped(raw),
       content: lineContent,
     });
   }

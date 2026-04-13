@@ -26,6 +26,11 @@ const TYPE_COLOR_MAP: Record<LogLineType, string> = {
   vendor: "text-log-vendor",
   mount: "text-log-mount",
   weather: "text-log-weather",
+  appearance: "text-log-appearance",
+  network: "text-log-network",
+  audio: "text-log-audio",
+  error: "text-log-error",
+  asset: "text-log-asset",
   system: "text-log-system",
   unknown: "text-text-secondary",
 };
