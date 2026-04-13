@@ -86,6 +86,23 @@ export interface FilterConfig {
   highlights: HighlightRule[];
 }
 
+/** A saved view preset — captures the full filter + config state */
+export interface ViewPreset {
+  /** Display name */
+  name: string;
+  /** Unique ID */
+  id: string;
+  /** Saved filter state (types stored as array for serialization) */
+  search: string;
+  isRegex: boolean;
+  enabledTypes: LogLineType[];
+  timeFrom: string;
+  timeTo: string;
+  entityId: string;
+  /** ID of the active filter config, if any */
+  filterConfigId: string | null;
+}
+
 /** Filter state for the log viewer */
 export interface FilterState {
   /** Text or regex search query */

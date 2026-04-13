@@ -96,6 +96,12 @@
       Config
     </button>
 
+    <!-- View presets -->
+    <PresetMenu
+      @save="(name: string) => $emit('savePreset', name)"
+      @load="(preset: ViewPreset) => $emit('loadPreset', preset)"
+    />
+
     <!-- Line count -->
     <span class="text-xs text-text-muted ml-auto whitespace-nowrap">
       {{ filteredCount }} / {{ totalCount }} lines
@@ -105,8 +111,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import type { LogLineType, FilterState } from "../lib/types";
+import type { LogLineType, FilterState, ViewPreset } from "../lib/types";
 import { typeColorClass, typeLabel } from "../lib/log-colors";
+import PresetMenu from "./PresetMenu.vue";
 
 const props = defineProps<{
   totalCount: number;
@@ -119,6 +126,8 @@ const emit = defineEmits<{
   filter: [state: FilterState];
   toggleTailing: [];
   toggleConfig: [];
+  savePreset: [name: string];
+  loadPreset: [preset: ViewPreset];
 }>();
 
 const searchText = ref("");
@@ -137,6 +146,35 @@ watch(() => props.availableTypes, (types) => {
 
 const enabledCount = computed(() => enabledTypes.value.size);
 const disabledCount = computed(() => props.availableTypes.length - enabledTypes.value.size);
+
+/** Get current state for saving as a preset */
+function getCurrentState() {
+  return {
+    search: searchText.value,
+    isRegex: isRegex.value,
+    enabledTypes: [...enabledTypes.value],
+    timeFrom: timeFrom.value,
+    timeTo: timeTo.value,
+    entityId: entityId.value,
+  };
+}
+
+/** Restore state from a preset */
+function restoreFromPreset(preset: ViewPreset) {
+  searchText.value = preset.search;
+  isRegex.value = preset.isRegex;
+  entityId.value = preset.entityId;
+  timeFrom.value = preset.timeFrom;
+  timeTo.value = preset.timeTo;
+  if (preset.enabledTypes.length > 0) {
+    enabledTypes.value = new Set(preset.enabledTypes as LogLineType[]);
+  } else {
+    enabledTypes.value = new Set(props.availableTypes);
+  }
+  emitFilter();
+}
+
+defineExpose({ getCurrentState, restoreFromPreset });
 
 function toggleType(type: LogLineType) {
   const s = new Set(enabledTypes.value);
