@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col h-full bg-bg-secondary border-l border-border w-80 shrink-0">
+  <div class="flex h-full shrink-0">
+    <ResizeHandle @resize="onResize" />
+    <div class="flex flex-col h-full bg-bg-secondary border-l border-border overflow-hidden" :style="{ width: panelWidth + 'px' }">
     <!-- Header -->
     <div class="flex items-center justify-between px-3 py-2 border-b border-border">
       <h2 class="text-sm font-bold text-accent">Filter Configs</h2>
@@ -117,11 +119,13 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { FilterConfig } from "../lib/types";
+import ResizeHandle from "./ResizeHandle.vue";
 import {
   builtInConfigs,
   loadUserConfigs,
@@ -135,6 +139,12 @@ const emit = defineEmits<{
   close: [];
   apply: [config: FilterConfig];
 }>();
+
+const panelWidth = ref(320);
+
+function onResize(delta: number) {
+  panelWidth.value = Math.max(200, Math.min(600, panelWidth.value - delta));
+}
 
 const userConfigs = ref<FilterConfig[]>(loadUserConfigs());
 const activeConfigId = ref<string>(builtInConfigs[0].id);

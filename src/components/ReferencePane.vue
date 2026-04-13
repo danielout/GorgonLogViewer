@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col h-full bg-bg-secondary border-l border-border w-96 shrink-0">
+  <div class="flex h-full shrink-0">
+    <ResizeHandle @resize="onResize" />
+    <div class="flex flex-col h-full bg-bg-secondary border-l border-border overflow-hidden" :style="{ width: panelWidth + 'px' }">
     <!-- Header -->
     <div class="flex items-center justify-between px-3 py-2 border-b border-border">
       <h2 class="text-sm font-bold text-accent">Reference</h2>
@@ -95,15 +97,23 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { allRefEntries, refCategories, type RefEntry } from "../lib/reference-data";
+import ResizeHandle from "./ResizeHandle.vue";
 
 defineEmits<{
   close: [];
 }>();
+
+const panelWidth = ref(384);
+
+function onResize(delta: number) {
+  panelWidth.value = Math.max(240, Math.min(800, panelWidth.value - delta));
+}
 
 const searchQuery = ref("");
 const expandedCategories = ref(new Set<string>());
