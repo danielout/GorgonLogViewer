@@ -2,7 +2,7 @@
 
 ## Actionable Tasks
 
-- build a release script so we can cut release builds
+(none — all current items complete!)
 
 ### Done
 - ~~setup automatic release note generation with commit tagging conventions~~
@@ -21,6 +21,15 @@
 - ~~filter config: shareable/editable filter definitions with custom highlights and live preview~~
 - ~~view presets: create, edit, save, delete, share preset views~~
 - ~~bundle samples with the app for illustrative purposes (scrubbed for personal info)~~
+- ~~build a release script so we can cut release builds~~
+- ~~bug: sync'd log scrolling timezone offset fix~~
+- ~~chore: vite stops watching docs/samples/scripts folders~~
+- ~~impv: reference and config panels are horizontally resizable~~
+- ~~impv: arguments colored differently (numbers, strings, booleans, keywords)~~
+- ~~impv: strings detected and colored in .log files~~
+- ~~impv: arguments/fields display their data types in tooltips~~
+- ~~impv: types filter has grouped sub-categories with bulk toggle~~
+- ~~impv: clicking tooltip opens reference viewer to that item~~
 
 
 ## Need Investigation
