@@ -78,13 +78,21 @@ const rightFile = computed(() => props.openFiles.find((f) => f.path === rightPat
 const leftViewer = ref<InstanceType<typeof LogViewer> | null>(null);
 const rightViewer = ref<InstanceType<typeof LogViewer> | null>(null);
 
+/** Extract time-of-day in ms, ignoring the date component.
+ *  Player.log has [HH:MM:SS] (no date), chat logs have YY-MM-DD HH:MM:SS.
+ *  Comparing only time-of-day handles the date/timezone mismatch. */
+function timeOfDayMs(d: Date): number {
+  return d.getHours() * 3600000 + d.getMinutes() * 60000 + d.getSeconds() * 1000;
+}
+
 function findClosestLineIndex(file: OpenFile, targetTime: Date): number {
+  const targetTod = timeOfDayMs(targetTime);
   let closest = 0;
   let closestDiff = Infinity;
   for (let i = 0; i < file.lines.length; i++) {
     const line = file.lines[i];
     if (!line.timestampDate) continue;
-    const diff = Math.abs(line.timestampDate.getTime() - targetTime.getTime());
+    const diff = Math.abs(timeOfDayMs(line.timestampDate) - targetTod);
     if (diff < closestDiff) {
       closestDiff = diff;
       closest = i;
