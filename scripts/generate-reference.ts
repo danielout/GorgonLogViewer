@@ -106,6 +106,14 @@ const EVENT_CATEGORY: Record<string, string> = {
   ProcessToolCommandResponse: "World & UI",
   ProcessRemoveLoot: "Items & Inventory",
   ProcessSetRecipeReuseTimers: "Skills & Abilities",
+  // Pets
+  ProcessSetPetOwner: "Player Status",
+  ProcessSetPetCombatMode: "Player Status",
+  // Abilities
+  ProcessAddAbility: "Skills & Abilities",
+  // Gear preview
+  ProcessPreviewGear: "World & UI",
+  ProcessCommand: "World & UI",
   // P2P
   ProcessP2PStartInteraction: "P2P Interaction",
   ProcessP2PRequestInteraction: "P2P Interaction",

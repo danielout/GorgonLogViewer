@@ -250,3 +250,30 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 | `hash` | i32 | Group state hash |
 
 **When it fires:** Player joins, leaves, or group state changes (member joins/leaves).
+
+### ProcessSetPetOwner — Pet ownership assigned
+
+```
+[HH:MM:SS] LocalPlayer: ProcessSetPetOwner(petEntityId, ownerEntityId, combatMode)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `petEntityId` | u32 | Pet entity ID |
+| `ownerEntityId` | u32 | Owner entity ID (0 = pet dismissed) |
+| `combatMode` | enum | Pet behavior: `AttackMyTargetsFollow`, `PassiveFollow` |
+
+**When it fires:** A pet is summoned (ownerEntityId = player), dismissed (ownerEntityId = 0), or changes owners.
+
+### ProcessSetPetCombatMode — Pet behavior mode changed
+
+```
+[HH:MM:SS] LocalPlayer: ProcessSetPetCombatMode(petEntityId, combatMode)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `petEntityId` | u32 | Pet entity ID |
+| `combatMode` | enum | Pet behavior: `AttackMyTargetsFollow`, `PassiveFollow` |
+
+**When it fires:** Player changes their pet's combat behavior mode.

@@ -164,3 +164,164 @@ Common error types:
 - `Network state is InitializedArea but actually we're not connected!` — connection lost
 
 **When it fires:** Various runtime errors. Most are non-fatal rendering/loading issues.
+
+- `general error! Disconnected due to being AFK too long` — AFK disconnect
+- `Particle prefab 'X' has a ParticleInfo without a scheduled delete` — particle cleanup warning
+
+### Warning messages
+
+```
+[HH:MM:SS]  Warning: description
+```
+
+- `Got too many pixels from server! N but max is N` — server sent oversized data
+
+## Session & Login
+
+### Logged in as character — Login marker
+
+```
+[HH:MM:SS] Logged in as character CharacterName. Time UTC=YYYY/MM/DD HH:MM:SS. Timezone Offset -HH:MM:SS
+```
+
+**When it fires:** Player selects a character and enters the game world. Contains the character name, server UTC time, and timezone offset.
+
+### Logging chat — Chat log file path
+
+```
+[HH:MM:SS] Logging chat to C:/Users/.../AppData/LocalLow/Elder Game/Project Gorgon/ChatLogs/Chat-YY-MM-DD.log
+```
+
+**When it fires:** Chat logging begins. Shows the file path being written to.
+
+### Loading/Saving Chat Tabs — Chat UI state
+
+```
+[HH:MM:SS] Loading Chat Tabs:
+[HH:MM:SS] Saving Chat Tabs:
+```
+
+**When it fires:** Chat tab configuration is loaded (on login) or saved (on logout/zone change).
+
+### Lost connection — Disconnect
+
+```
+[HH:MM:SS] Lost connection to server! Reason: Connection terminated
+```
+
+**When it fires:** Client disconnects from the server. Reason describes the cause.
+
+### Sent C_INIT2 — Area initialization handshake
+
+```
+[HH:MM:SS] Sent C_INIT2 for AreaName
+```
+
+**When it fires:** Client sends area initialization to the server after a zone load completes. The area name matches CDN `areas.json` entries.
+
+## Guild & Social
+
+### General Guild Info — Guild membership
+
+```
+[HH:MM:SS] General Guild Info: in guild 'GuildName'
+```
+
+**When it fires:** Player's guild membership confirmed on login.
+
+### Voice channel — Voice chat join/leave
+
+```
+[HH:MM:SS] Joined voice channel: serverId-HuntingGroup-groupId
+[HH:MM:SS] Left voice channel: serverId-HuntingGroup-groupId
+```
+
+**When it fires:** Player joins or leaves a Vivox voice chat channel, typically tied to a hunting group.
+
+### Participant — Voice chat members
+
+```
+[HH:MM:SS] Participant PlayerName added to channel serverId-HuntingGroup-groupId
+[HH:MM:SS] Participant PlayerName removed from channel serverId-HuntingGroup-groupId
+```
+
+**When it fires:** A player joins or leaves a voice channel the local player is in.
+
+## Effects
+
+### Removing effect — Local effect removal
+
+```
+[HH:MM:SS] Removing effect from local player: effectInfo
+```
+
+**When it fires:** An effect/buff is removed from the player. Separate from `ProcessRemoveEffects` — this is a client-side log of the removal.
+
+## Gameplay
+
+### Move to — Auto-move for ability
+
+```
+[HH:MM:SS] Move to TargetName finished, trying again to use ability Ability(abilityInfo)
+```
+
+**When it fires:** Player was out of range to use an ability, auto-moved to the target, and is now retrying the ability.
+
+### NOTE: processed message during loading — Chat during zone load
+
+```
+[HH:MM:SS] NOTE: processed message during loading: messageText
+```
+
+**When it fires:** Chat messages received while a zone is loading. These are queued and logged but may not appear in the chat UI during the load.
+
+### ShowBook — Book display triggered
+
+```
+[HH:MM:SS] ShowBook("title", "content"). Current book is bookId
+```
+
+**When it fires:** A book/log UI is triggered. `Current book` shows what was previously displayed (`null` if nothing). `GuildMotd` indicates the guild message of the day.
+
+### Set fog — Map visibility
+
+```
+[HH:MM:SS] Set fog for map ID #mapId
+```
+
+**When it fires:** Fog/exploration visibility is configured for a zone map.
+
+## Rendering Warnings
+
+### Cannot remove particle — Missing particle effect
+
+```
+[HH:MM:SS] Cannot remove: entity entity_N doesn't have particle ParticleName
+```
+
+**When it fires:** The game tries to remove a particle effect from an entity that doesn't have it. Common and non-fatal. Particle names reveal active buff/ability visuals (e.g., `BuffGreen`, `BoneWhirlwind`, `CryogenicFreeze`).
+
+### Ref-count cleanup — Asset unloading
+
+```
+[HH:MM:SS] Ref-count cleanup of appearance assetName
+```
+
+**When it fires:** An appearance asset's reference count dropped to zero and it's being cleaned up.
+
+### NullAnimEx — Missing animator
+
+```
+[HH:MM:SS] NullAnimEx.IsAttackState(...)
+[HH:MM:SS] NullAnimEx.SetMode(...)
+```
+
+**When it fires:** Animation calls on an entity that has no animator component. Non-fatal warnings.
+
+### Drag state — UI drag warning
+
+```
+[HH:MM:SS] Still dragging DraggingIcon (UnityEngine.GameObject) but the mouse is no longer held down!
+```
+
+**When it fires:** UI drag operation lost track of the mouse state.

@@ -28,6 +28,7 @@ const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
   [/^LocalPlayer:\s*ProcessTrainingScreen/, "skill"],
   [/^LocalPlayer:\s*ProcessDoDelayLoop/, "skill"],
   [/^LocalPlayer:\s*Process(?:Set|Delta)AbilityTimer/, "skill"],
+  [/^LocalPlayer:\s*ProcessAddAbility/, "skill"],
   // Quests
   [/^LocalPlayer:\s*Process(?:Add|Load|Update|Complete|Fail|Select)Quest/, "quest"],
   [/^LocalPlayer:\s*ProcessCompleteDirectedGoals/, "quest"],
@@ -53,9 +54,10 @@ const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
   [/^LocalPlayer:\s*ProcessDeathMessage/, "combat"],
   [/^LocalPlayer:\s*ProcessCombatModeStatus/, "combat"],
   [/^LocalPlayer:\s*ProcessRe?spawn/, "combat"],
-  // Mount
+  // Mount & pets
   [/^LocalPlayer:\s*ProcessPlayerMount/, "mount"],
   [/^LocalPlayer:\s*ProcessMountXpStatus/, "mount"],
+  [/^LocalPlayer:\s*ProcessSetPet/, "mount"],
   // P2P interaction
   [/^LocalPlayer:\s*ProcessP2P/, "interaction"],
   // Weather & celestial

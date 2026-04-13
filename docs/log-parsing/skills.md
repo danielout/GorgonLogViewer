@@ -55,6 +55,18 @@ A single line containing every skill the player has, each as a comma-separated s
 [23:33:31] LocalPlayer: ProcessSetActiveSkills(Hammer, Mentalism)
 ```
 
+### ProcessAddAbility — New ability learned
+
+```
+[HH:MM:SS] LocalPlayer: ProcessAddAbility(abilityId)
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `abilityId` | u32 | Numeric ability identifier (maps to CDN `abilities.json`) |
+
+**When it fires:** Player learns a new ability, typically from NPC training or a skill reward.
+
 ### ProcessLoadAbilities — Ability loadout on login
 
 ```

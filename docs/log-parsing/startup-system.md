@@ -133,7 +133,7 @@ LOADING LEVEL ChooseCharacter
 LOADING LEVEL AreaSerbule
 ```
 
-Zone transition initiated. Followed by asset loading lines and then `!!! Initializing area!` (timestamped).
+Zone transition initiated. Followed by asset loading lines and then `!!! Initializing area!` (timestamped). `ReconnectToServer` indicates a reconnection attempt after disconnect.
 
 ### Map Textures
 
@@ -243,3 +243,19 @@ AudioSource not fully 3D! Fixing
 ```
 
 Audio positioning correction.
+
+### Selection Collider Warnings
+
+```
+Auto-generated a selection collider for ObjectName, consider adding one manually so it's more accurate
+```
+
+Non-fatal warning that an interactable object doesn't have a manually defined click collider. The engine auto-generates one from the mesh.
+
+### Direct3D Warnings
+
+```
+Direct3D: detected that IDXGISwapChain::GetFrameStatistics is broken (it does not return proper timestamps). Delta time will now be calculated using cpu-side time stampling until the game window is moved.
+```
+
+DirectX framerate timing fallback. Happens when the swap chain can't provide accurate frame timestamps.

@@ -236,3 +236,33 @@
 **When it fires:** Interactable world entities (plants, gardening nodes, etc.) update their name, description, or available action. Common with the gardening system.
 
 **Note:** This event does NOT have the `LocalPlayer:` prefix — it fires directly as `ProcessUpdateDescription`.
+
+### ProcessPreviewGear — Equipment preview
+
+```
+[HH:MM:SS] LocalPlayer: ProcessPreviewGear(entityId, targetEntityId, "appearanceString")
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `entityId` | u32 | Source entity ID |
+| `targetEntityId` | u32 | Target entity being previewed on |
+| `appearanceString` | string | Full appearance specification including race, body, equipment slots, and colors |
+
+**When it fires:** Player previews gear changes. The appearance string is the same format as `Download appearance loop` entries — a complete character model specification.
+
+### ProcessCommand — UI command processed
+
+```
+[HH:MM:SS] ProcessCommand action: elementName elements: count
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `action` | enum | Command type: `Create`, `Update`, `Heartbeat` |
+| `elementName` | string | UI element name (e.g., `HorseThievesUI`) |
+| `count` | u32 | Number of UI elements |
+
+**When it fires:** UI system processes a command for a named UI element. Fires for creation, updates, and heartbeat checks.
+
+**Note:** This event does NOT have the `LocalPlayer:` prefix.
