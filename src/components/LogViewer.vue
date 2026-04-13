@@ -12,7 +12,7 @@
           v-for="line in visibleLines"
           :key="line.lineNumber"
           class="flex hover:bg-bg-hover/50 px-4 group"
-          :class="lineTypeClass(line.type)"
+          :class="typeColorClass(line.type)"
           @mouseenter="showTooltip($event, line)"
           @mouseleave="hideTooltip"
         >
@@ -28,7 +28,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
-import type { LogLine, LogLineType } from "../lib/types";
+import type { LogLine } from "../lib/types";
+import { typeColorClass } from "../lib/log-colors";
 import { getEventInfo, type EventInfo } from "../lib/event-reference";
 import LineTooltip from "./LineTooltip.vue";
 
@@ -150,24 +151,6 @@ watch(() => props.lines, (newLines) => {
 
   prevLinesRef = newLines;
 }, { deep: true });
-
-function lineTypeClass(type: LogLineType): string {
-  const map: Partial<Record<LogLineType, string>> = {
-    "chat-global": "text-log-chat-global",
-    "chat-help": "text-log-chat-help",
-    "chat-nearby": "text-log-chat-nearby",
-    "chat-guild": "text-log-chat-guild",
-    "chat-trade": "text-log-chat-trade",
-    combat: "text-log-combat",
-    status: "text-log-status",
-    npc: "text-log-npc",
-    action: "text-log-action",
-    system: "text-log-system",
-    item: "text-log-item",
-    skill: "text-log-skill",
-  };
-  return map[type] ?? "text-text-secondary";
-}
 
 function escapeHtml(str: string): string {
   return str

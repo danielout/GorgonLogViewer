@@ -25,6 +25,7 @@
         :total-count="activeFileData.lines.length"
         :filtered-count="filteredLines.length"
         :tailing="activeFileData.tailing"
+        :available-types="availableTypes"
         @filter="onFilter"
         @toggle-tailing="$emit('toggleTailing', activeFileData!.path)"
       />
@@ -45,7 +46,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import type { OpenFile, FilterState, LogLine } from "../lib/types";
+import type { OpenFile, FilterState, LogLine, LogLineType } from "../lib/types";
 import { analyzeCdnSchema } from "../lib/cdn-schema";
 import FilterBar from "../components/FilterBar.vue";
 import LogViewer from "../components/LogViewer.vue";
@@ -85,6 +86,15 @@ const filter = ref<FilterState>({
 const activeFileData = computed(() =>
   props.openFiles.find((f) => f.path === props.activeFile) ?? null
 );
+
+const availableTypes = computed<LogLineType[]>(() => {
+  if (!activeFileData.value) return [];
+  const types = new Set<LogLineType>();
+  for (const line of activeFileData.value.lines) {
+    types.add(line.type);
+  }
+  return [...types].sort();
+});
 
 const searchPattern = computed<RegExp | null>(() => {
   if (!filter.value.search) return null;

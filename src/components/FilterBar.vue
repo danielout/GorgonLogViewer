@@ -34,7 +34,7 @@
         class="absolute right-0 top-full mt-1 bg-bg-surface border border-border rounded shadow-lg z-10 p-2 min-w-48"
       >
         <label
-          v-for="lt in allTypes"
+          v-for="lt in availableTypes"
           :key="lt"
           class="flex items-center gap-2 px-2 py-1 text-sm cursor-pointer hover:bg-bg-hover rounded"
         >
@@ -95,13 +95,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import type { LogLineType, FilterState } from "../lib/types";
+import { typeColorClass, typeLabel } from "../lib/log-colors";
 
-defineProps<{
+const props = defineProps<{
   totalCount: number;
   filteredCount: number;
   tailing: boolean;
+  availableTypes: LogLineType[];
 }>();
 
 const emit = defineEmits<{
@@ -109,23 +111,22 @@ const emit = defineEmits<{
   toggleTailing: [];
 }>();
 
-const ALL_TYPES: LogLineType[] = [
-  "chat-global", "chat-help", "chat-nearby", "chat-guild", "chat-trade", "chat-party",
-  "combat", "status", "npc", "action", "system", "item", "skill", "unknown",
-];
-
 const searchText = ref("");
 const isRegex = ref(false);
 const entityId = ref("");
 const timeFrom = ref("");
 const timeTo = ref("");
 const showTypeFilter = ref(false);
-const enabledTypes = ref(new Set<LogLineType>(ALL_TYPES));
+const enabledTypes = ref(new Set<LogLineType>());
 const dropdownRef = ref<HTMLElement | null>(null);
 
-const allTypes = ALL_TYPES;
+// Initialize enabled types to all available types
+watch(() => props.availableTypes, (types) => {
+  enabledTypes.value = new Set(types);
+}, { immediate: true });
+
 const enabledCount = computed(() => enabledTypes.value.size);
-const disabledCount = computed(() => ALL_TYPES.length - enabledTypes.value.size);
+const disabledCount = computed(() => props.availableTypes.length - enabledTypes.value.size);
 
 function toggleType(type: LogLineType) {
   const s = new Set(enabledTypes.value);
@@ -152,28 +153,6 @@ function emitFilter() {
     timeTo: parseTimeInput(timeTo.value),
     entityId: entityId.value.trim(),
   });
-}
-
-function typeLabel(t: LogLineType): string {
-  return t.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function typeColorClass(t: LogLineType): string {
-  const map: Partial<Record<LogLineType, string>> = {
-    "chat-global": "text-log-chat-global",
-    "chat-help": "text-log-chat-help",
-    "chat-nearby": "text-log-chat-nearby",
-    "chat-guild": "text-log-chat-guild",
-    "chat-trade": "text-log-chat-trade",
-    combat: "text-log-combat",
-    status: "text-log-status",
-    npc: "text-log-npc",
-    action: "text-log-action",
-    system: "text-log-system",
-    item: "text-log-item",
-    skill: "text-log-skill",
-  };
-  return map[t] ?? "text-text-secondary";
 }
 
 function handleClickOutside(e: MouseEvent) {

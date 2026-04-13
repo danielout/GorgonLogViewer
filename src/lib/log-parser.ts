@@ -10,13 +10,52 @@ const CHAT_LOG_TS = /^(\d{2}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\t/;
 /** Chat channel tags like [Global], [Help], [Nearby], etc. */
 const CHAT_CHANNEL = /^\[(\w[\w\s]*)\]/;
 
-/** Player.log event prefixes */
+/** Player.log event prefixes — order matters, first match wins */
 const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
+  // Items & inventory
   [/^LocalPlayer:\s*Process(?:Add|Update|Delete)Item/, "item"],
-  [/^LocalPlayer:\s*ProcessAddToStorageVault/, "item"],
-  [/^LocalPlayer:\s*ProcessLoadSkills/, "skill"],
-  [/^LocalPlayer:\s*ProcessUpdateSkill/, "skill"],
+  [/^LocalPlayer:\s*Process(?:AddTo|RemoveFrom|Show|Refresh)StorageVault/, "item"],
   [/^LocalPlayer:\s*ProcessRecipeComplete/, "item"],
+  [/^LocalPlayer:\s*ProcessInventoryFolder/, "item"],
+  [/^LocalPlayer:\s*ProcessLockedItems/, "item"],
+  [/^LocalPlayer:\s*ProcessExtendedItemUse/, "item"],
+  // Skills & abilities
+  [/^LocalPlayer:\s*Process(?:Load|Update)Skill/, "skill"],
+  [/^LocalPlayer:\s*ProcessLoadAbilities/, "skill"],
+  [/^LocalPlayer:\s*ProcessSetActiveSkills/, "skill"],
+  [/^LocalPlayer:\s*Process(?:Load|Update|Show)Recipe/, "skill"],
+  [/^LocalPlayer:\s*ProcessSetStarredRecipes/, "skill"],
+  [/^LocalPlayer:\s*ProcessTrainingScreen/, "skill"],
+  // Quests
+  [/^LocalPlayer:\s*Process(?:Add|Load|Update|Complete|Fail|Select)Quest/, "quest"],
+  [/^LocalPlayer:\s*ProcessCompleteDirectedGoals/, "quest"],
+  // NPC interaction
+  [/^LocalPlayer:\s*Process(?:Start|Wait|End)Interaction/, "interaction"],
+  [/^LocalPlayer:\s*Process(?:PreTalk|Talk)Screen/, "interaction"],
+  [/^LocalPlayer:\s*ProcessPromptForItem/, "interaction"],
+  [/^LocalPlayer:\s*ProcessDeltaFavor/, "interaction"],
+  [/^LocalPlayer:\s*ProcessFirstEverInteraction/, "interaction"],
+  [/^LocalPlayer:\s*ProcessBarterScreen/, "interaction"],
+  [/^LocalPlayer:\s*ProcessInputBox/, "interaction"],
+  [/^LocalPlayer:\s*ProcessBook/, "interaction"],
+  // Effects & buffs
+  [/^LocalPlayer:\s*Process(?:Add|Remove)Effects/, "effect"],
+  [/^LocalPlayer:\s*ProcessUpdateEffectName/, "effect"],
+  // Attributes
+  [/^LocalPlayer:\s*ProcessSetAttributes/, "attribute"],
+  // Vendor
+  [/^LocalPlayer:\s*ProcessVendor/, "vendor"],
+  [/^LocalPlayer:\s*ProcessPlayerVendorScreen/, "vendor"],
+  // Combat
+  [/^LocalPlayer:\s*ProcessAttack/, "combat"],
+  [/^LocalPlayer:\s*ProcessDeathMessage/, "combat"],
+  [/^LocalPlayer:\s*ProcessCombatModeStatus/, "combat"],
+  [/^LocalPlayer:\s*ProcessRe?spawn/, "combat"],
+  // Mount
+  [/^LocalPlayer:\s*ProcessPlayerMount/, "mount"],
+  [/^LocalPlayer:\s*ProcessMountXpStatus/, "mount"],
+  // Weather
+  [/^LocalPlayer:\s*ProcessSetWeather/, "weather"],
 ];
 
 /** Chat log channel → type mapping */
@@ -27,6 +66,11 @@ const CHANNEL_TYPE_MAP: Record<string, LogLineType> = {
   Guild: "chat-guild",
   Trade: "chat-trade",
   Party: "chat-party",
+  Tell: "chat-tell",
+  Emotes: "chat-emote",
+  Announcement: "chat-announcement",
+  Info: "chat-info",
+  Error: "chat-error",
   Combat: "combat",
   Status: "status",
   "NPC Chatter": "npc",
@@ -43,7 +87,7 @@ function classifyPlayerLogLine(content: string): LogLineType {
 function classifyChatLogLine(content: string): LogLineType {
   const match = content.match(CHAT_CHANNEL);
   if (match) {
-    return CHANNEL_TYPE_MAP[match[1]] ?? "unknown";
+    return CHANNEL_TYPE_MAP[match[1]] ?? "chat-custom";
   }
   return "unknown";
 }

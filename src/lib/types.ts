@@ -1,18 +1,34 @@
 /** Recognized log line categories */
 export type LogLineType =
+  // Chat channels
   | "chat-global"
   | "chat-help"
   | "chat-nearby"
   | "chat-guild"
   | "chat-trade"
   | "chat-party"
+  | "chat-tell"
+  | "chat-emote"
+  | "chat-announcement"
+  | "chat-info"
+  | "chat-error"
+  | "chat-custom"
+  // Shared
   | "combat"
   | "status"
   | "npc"
   | "action"
-  | "system"
+  // Player.log categories
   | "item"
   | "skill"
+  | "quest"
+  | "interaction"
+  | "effect"
+  | "attribute"
+  | "vendor"
+  | "mount"
+  | "weather"
+  | "system"
   | "unknown";
 
 /** A single parsed log line */
