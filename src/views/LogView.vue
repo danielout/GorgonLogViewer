@@ -35,9 +35,11 @@
         @toggle-config="showConfigPanel = !showConfigPanel"
         @save-preset="onSavePreset"
         @load-preset="onLoadPreset"
+        @goto-line="onGotoLine"
       />
       <div class="flex flex-1 min-h-0">
         <LogViewer
+          ref="logViewerRef"
           class="flex-1"
           :lines="filteredLines"
           :search-pattern="searchPattern"
@@ -63,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import type { OpenFile, FilterState, FilterConfig, HighlightRule, ViewPreset, LogLine, LogLineType } from "../lib/types";
 import { analyzeCdnSchema } from "../lib/cdn-schema";
 import { loadPresets, savePresets, createPresetId } from "../lib/view-presets";
@@ -88,6 +90,7 @@ const jsonViewMode = ref<"tree" | "schema">("tree");
 const showConfigPanel = ref(false);
 const activeConfig = ref<FilterConfig | null>(null);
 const filterBarRef = ref<InstanceType<typeof FilterBar> | null>(null);
+const logViewerRef = ref<InstanceType<typeof LogViewer> | null>(null);
 const currentLine = ref<number | null>(null);
 const currentTimestamp = ref<string | null>(null);
 
@@ -208,8 +211,20 @@ const filteredLines = computed<LogLine[]>(() => {
   return lines;
 });
 
+function onGotoLine(lineNumber: number) {
+  logViewerRef.value?.scrollToLineNumber(lineNumber);
+}
+
 function onFilter(state: FilterState) {
+  // Save current line before filter changes the lines array
+  const savedLine = currentLine.value;
   filter.value = state;
+  // After Vue re-renders with new filtered lines, scroll back
+  if (savedLine !== null) {
+    nextTick(() => {
+      logViewerRef.value?.scrollToLineNumber(savedLine);
+    });
+  }
 }
 
 function onApplyConfig(config: FilterConfig) {

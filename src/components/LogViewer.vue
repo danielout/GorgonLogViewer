@@ -110,7 +110,7 @@ function scrollToIndex(index: number) {
   requestAnimationFrame(() => { suppressEmit = false; });
 }
 
-defineExpose({ scrollToIndex });
+
 
 function updateViewportHeight() {
   if (containerRef.value) {
@@ -132,66 +132,23 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-// Track which line number is at the top of the viewport for scroll preservation
-let prevFirstLineNumber: number | null = null;
-
-watch(() => props.lines, (newLines, oldLines) => {
-  if (!containerRef.value) return;
-
-  // Auto-scroll to bottom when tailing
-  if (props.autoScroll) {
+// Auto-scroll to bottom when tailing
+watch(() => props.lines.length, () => {
+  if (props.autoScroll && containerRef.value) {
     nextTick(() => {
       if (containerRef.value) {
         containerRef.value.scrollTop = containerRef.value.scrollHeight;
         scrollTop.value = containerRef.value.scrollTop;
       }
     });
-  
-    return;
   }
-
-  // Different file entirely — reset to top
-  if (!oldLines || oldLines.length === 0) {
-    containerRef.value.scrollTop = 0;
-    scrollTop.value = 0;
-    prevFirstLineNumber = newLines[0]?.lineNumber ?? null;
-    return;
-  }
-
-  // If we haven't tracked a position yet, use the first visible line
-  if (prevFirstLineNumber === null && newLines.length > 0) {
-    const idx = Math.floor(containerRef.value.scrollTop / LINE_HEIGHT);
-    prevFirstLineNumber = (oldLines[idx] ?? oldLines[0])?.lineNumber ?? null;
-  }
-
-  // Filter changed — preserve scroll position
-  if (prevFirstLineNumber !== null && newLines.length > 0) {
-    const targetLine = prevFirstLineNumber;
-    // Find the index of the first line at or after our previous position
-    let bestIdx = 0;
-    for (let i = 0; i < newLines.length; i++) {
-      if (newLines[i].lineNumber >= targetLine) {
-        bestIdx = i;
-        break;
-      }
-    }
-    nextTick(() => {
-      if (containerRef.value) {
-        containerRef.value.scrollTop = bestIdx * LINE_HEIGHT;
-        scrollTop.value = containerRef.value.scrollTop;
-      }
-    });
-  }
-
-
 });
 
-// Keep track of which original line number is at the top of the viewport
+// Emit position info on scroll
 const visibleStartIndex = computed(() => Math.floor(scrollTop.value / LINE_HEIGHT));
 watch(visibleStartIndex, () => {
   if (props.lines.length > 0 && visibleStartIndex.value < props.lines.length) {
     const line = props.lines[visibleStartIndex.value];
-    prevFirstLineNumber = line?.lineNumber ?? null;
     // Find the nearest timestamp (current line or scan backwards)
     let ts: string | null = null;
     if (line?.timestamp) {
@@ -207,6 +164,24 @@ watch(visibleStartIndex, () => {
     emit("positionChange", line?.lineNumber ?? null, ts);
   }
 });
+
+/** Scroll to the nearest line with the given original line number */
+function scrollToLineNumber(targetLineNumber: number) {
+  if (!containerRef.value || props.lines.length === 0) return;
+  // Find the first line at or after the target
+  let bestIdx = 0;
+  for (let i = 0; i < props.lines.length; i++) {
+    if (props.lines[i].lineNumber >= targetLineNumber) {
+      bestIdx = i;
+      break;
+    }
+    bestIdx = i; // if target is past the end, go to last line
+  }
+  containerRef.value.scrollTop = bestIdx * LINE_HEIGHT;
+  scrollTop.value = containerRef.value.scrollTop;
+}
+
+defineExpose({ scrollToIndex, scrollToLineNumber });
 
 function escapeHtml(str: string): string {
   return str

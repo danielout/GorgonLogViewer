@@ -83,14 +83,33 @@
         @load="(preset: ViewPreset) => $emit('loadPreset', preset)"
       />
 
-      <!-- Position and line count -->
-      <div class="text-xs text-text-muted ml-auto whitespace-nowrap text-right">
-        <span v-if="currentLine">
-          <span class="text-text-secondary">Ln {{ currentLine }}</span>
-          <span v-if="currentTimestamp" class="text-log-timestamp ml-1">{{ currentTimestamp }}</span>
-          <span class="mx-1">&middot;</span>
-        </span>
-        {{ filteredCount }} / {{ totalCount }} lines
+      <!-- Go to line -->
+      <div class="relative ml-auto flex items-center gap-2">
+        <div v-if="showGotoLine" class="flex items-center gap-1">
+          <input
+            ref="gotoLineInput"
+            v-model="gotoLineValue"
+            type="text"
+            placeholder="Line #"
+            class="w-20 bg-bg-surface text-text-primary text-xs px-2 py-1 rounded border border-border focus:border-accent focus:outline-none font-mono"
+            @keydown.enter="doGotoLine"
+            @keydown.escape="showGotoLine = false"
+          />
+          <button class="text-xs text-accent hover:text-accent-hover" @click="doGotoLine">Go</button>
+        </div>
+        <!-- Position and line count -->
+        <div
+          class="text-xs text-text-muted whitespace-nowrap text-right cursor-pointer hover:text-text-secondary"
+          title="Click to go to a specific line"
+          @click="openGotoLine"
+        >
+          <span v-if="currentLine">
+            <span class="text-text-secondary">Ln {{ currentLine }}</span>
+            <span v-if="currentTimestamp" class="text-log-timestamp ml-1">{{ currentTimestamp }}</span>
+            <span class="mx-1">&middot;</span>
+          </span>
+          {{ filteredCount }} / {{ totalCount }} lines
+        </div>
       </div>
     </div>
 
@@ -160,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import type { LogLineType, FilterState, ViewPreset } from "../lib/types";
 import { generatedFilterCategories } from "../lib/generated/reference-entries";
 import PresetMenu from "./PresetMenu.vue";
@@ -184,11 +203,32 @@ const emit = defineEmits<{
   toggleConfig: [];
   savePreset: [name: string];
   loadPreset: [preset: ViewPreset];
+  gotoLine: [lineNumber: number];
 }>();
 
 const searchText = ref("");
 const isRegex = ref(false);
 const entityId = ref("");
+const showGotoLine = ref(false);
+const gotoLineValue = ref("");
+const gotoLineInput = ref<HTMLInputElement | null>(null);
+
+function openGotoLine() {
+  gotoLineValue.value = props.currentLine?.toString() ?? "";
+  showGotoLine.value = true;
+  nextTick(() => {
+    gotoLineInput.value?.focus();
+    gotoLineInput.value?.select();
+  });
+}
+
+function doGotoLine() {
+  const num = parseInt(gotoLineValue.value);
+  if (!isNaN(num) && num > 0) {
+    emit("gotoLine", num);
+  }
+  showGotoLine.value = false;
+}
 const timeFrom = ref("");
 const timeTo = ref("");
 const newestFirst = ref(false);
