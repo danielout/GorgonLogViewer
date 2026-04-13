@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #1e1e2e;
+  --color-bg-secondary: #181825;
+  --color-bg-surface: #313244;
+  --color-bg-hover: #45475a;
+  --color-text-primary: #cdd6f4;
+  --color-text-secondary: #a6adc8;
+  --color-text-muted: #6c7086;
+  --color-accent: #89b4fa;
+  --color-accent-hover: #74c7ec;
+  --color-border: #45475a;
+
+  /* Log line type colors */
+  --color-log-chat-global: #a6e3a1;
+  --color-log-chat-help: #f9e2af;
+  --color-log-chat-nearby: #89dceb;
+  --color-log-chat-guild: #cba6f7;
+  --color-log-chat-trade: #fab387;
+  --color-log-combat: #f38ba8;
+  --color-log-status: #74c7ec;
+  --color-log-npc: #f5c2e7;
+  --color-log-action: #94e2d5;
+  --color-log-system: #6c7086;
+  --color-log-item: #f9e2af;
+  --color-log-skill: #89b4fa;
+  --color-log-timestamp: #585b70;
+}
