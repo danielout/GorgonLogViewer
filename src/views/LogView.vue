@@ -48,6 +48,7 @@ const filter = ref<FilterState>({
   enabledTypes: new Set(),
   timeFrom: null,
   timeTo: null,
+  entityId: "",
 });
 
 const activeFileData = computed(() =>
@@ -83,6 +84,12 @@ const filteredLines = computed<LogLine[]>(() => {
   if (filter.value.timeTo) {
     const to = filter.value.timeTo;
     lines = lines.filter((l) => !l.timestampDate || l.timestampDate <= to);
+  }
+
+  // Entity ID filter
+  if (filter.value.entityId) {
+    const id = filter.value.entityId;
+    lines = lines.filter((l) => l.raw.includes(id));
   }
 
   // Search filter

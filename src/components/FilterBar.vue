@@ -49,6 +49,16 @@
       </div>
     </div>
 
+    <!-- Entity ID -->
+    <input
+      v-model="entityId"
+      type="text"
+      placeholder="Entity ID"
+      class="w-28 bg-bg-surface text-text-primary text-sm px-2 py-1.5 rounded border border-border focus:border-accent focus:outline-none placeholder:text-text-muted font-mono"
+      title="Filter lines containing this entity ID"
+      @input="emitFilter"
+    />
+
     <!-- Timestamp range -->
     <input
       v-model="timeFrom"
@@ -106,6 +116,7 @@ const ALL_TYPES: LogLineType[] = [
 
 const searchText = ref("");
 const isRegex = ref(false);
+const entityId = ref("");
 const timeFrom = ref("");
 const timeTo = ref("");
 const showTypeFilter = ref(false);
@@ -139,6 +150,7 @@ function emitFilter() {
     enabledTypes: new Set(enabledTypes.value),
     timeFrom: parseTimeInput(timeFrom.value),
     timeTo: parseTimeInput(timeTo.value),
+    entityId: entityId.value.trim(),
   });
 }
 

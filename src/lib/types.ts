@@ -55,4 +55,6 @@ export interface FilterState {
   /** Timestamp range filter */
   timeFrom: Date | null;
   timeTo: Date | null;
+  /** Entity ID filter — shows only lines containing this ID */
+  entityId: string;
 }
