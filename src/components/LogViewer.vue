@@ -18,7 +18,7 @@
           @mouseleave="hideTooltip"
         >
           <span class="w-14 shrink-0 text-right pr-3 text-text-muted select-none">{{ line.lineNumber }}</span>
-          <span class="w-36 shrink-0 pr-3 text-log-timestamp select-none">{{ line.timestamp ?? '' }}</span>
+          <span class="w-36 shrink-0 pr-3 text-log-timestamp select-none">{{ formatTimestamp(line) }}</span>
           <span class="whitespace-pre-wrap break-all min-w-0" v-html="highlightSearch(line.content, line)"></span>
         </div>
       </div>
@@ -39,9 +39,32 @@ const props = defineProps<{
   searchPattern: RegExp | null;
   highlightRules?: HighlightRule[];
   autoScroll?: boolean;
+  /** "utc" shows raw timestamps, "local" converts UTC dates to local time */
+  timeDisplay?: "utc" | "local";
+  /** Timezone offset in ms (from chat log header) for local conversion */
+  timezoneOffsetMs?: number | null;
 }>();
 
 const LINE_HEIGHT = 24;
+
+function formatTimestamp(line: LogLine): string {
+  if (!line.timestamp) return "";
+  if (props.timeDisplay !== "local" || !line.timestampDate) return line.timestamp;
+  // Convert UTC date to local display using the offset
+  const offsetMs = props.timezoneOffsetMs ?? 0;
+  const localDate = new Date(line.timestampDate.getTime() + offsetMs);
+  const hh = String(localDate.getUTCHours()).padStart(2, "0");
+  const mm = String(localDate.getUTCMinutes()).padStart(2, "0");
+  const ss = String(localDate.getUTCSeconds()).padStart(2, "0");
+  // If the raw timestamp had a date prefix (chat log), include it
+  if (line.timestamp.includes("-")) {
+    const yy = String(localDate.getUTCFullYear() % 100).padStart(2, "0");
+    const mo = String(localDate.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(localDate.getUTCDate()).padStart(2, "0");
+    return `${yy}-${mo}-${dd} ${hh}:${mm}:${ss}`;
+  }
+  return `${hh}:${mm}:${ss}`;
+}
 const OVERSCAN = 20;
 
 const containerRef = ref<HTMLElement | null>(null);

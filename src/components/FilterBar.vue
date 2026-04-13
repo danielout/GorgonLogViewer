@@ -56,6 +56,15 @@
         {{ newestFirst ? '↑ Newest' : '↓ Oldest' }}
       </button>
 
+      <!-- Time display toggle -->
+      <button
+        class="text-sm px-3 py-1.5 rounded border border-border bg-bg-surface text-text-secondary hover:text-text-primary transition-colors"
+        title="Toggle timestamp display between UTC and local time"
+        @click="timeDisplay = timeDisplay === 'utc' ? 'local' : 'utc'; $emit('timeDisplayChange', timeDisplay)"
+      >
+        {{ timeDisplay === 'utc' ? 'UTC' : 'Local' }}
+      </button>
+
       <!-- Tail toggle -->
       <button
         class="text-sm px-3 py-1.5 rounded border transition-colors"
@@ -204,8 +213,10 @@ const emit = defineEmits<{
   savePreset: [name: string];
   loadPreset: [preset: ViewPreset];
   gotoLine: [lineNumber: number];
+  timeDisplayChange: [mode: "utc" | "local"];
 }>();
 
+const timeDisplay = ref<"utc" | "local">("utc");
 const searchText = ref("");
 const isRegex = ref(false);
 const entityId = ref("");

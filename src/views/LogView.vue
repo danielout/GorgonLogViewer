@@ -36,6 +36,7 @@
         @save-preset="onSavePreset"
         @load-preset="onLoadPreset"
         @goto-line="onGotoLine"
+        @time-display-change="timeDisplay = $event"
       />
       <div class="flex flex-1 min-h-0">
         <LogViewer
@@ -45,6 +46,8 @@
           :search-pattern="searchPattern"
           :highlight-rules="activeHighlightRules"
           :auto-scroll="activeFileData.tailing"
+          :time-display="timeDisplay"
+          :timezone-offset-ms="activeFileData.timezoneOffsetMs"
           @open-reference="$emit('openReference', $event)"
           @position-change="onPositionChange"
         />
@@ -93,6 +96,7 @@ const filterBarRef = ref<InstanceType<typeof FilterBar> | null>(null);
 const logViewerRef = ref<InstanceType<typeof LogViewer> | null>(null);
 const currentLine = ref<number | null>(null);
 const currentTimestamp = ref<string | null>(null);
+const timeDisplay = ref<"utc" | "local">("utc");
 
 function onPositionChange(lineNumber: number | null, timestamp: string | null) {
   currentLine.value = lineNumber;
