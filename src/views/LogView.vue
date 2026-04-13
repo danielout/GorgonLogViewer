@@ -1,14 +1,19 @@
 <template>
   <div v-if="activeFileData" class="flex flex-col h-full">
-    <FilterBar
-      :total-count="activeFileData.lines.length"
-      :filtered-count="filteredLines.length"
-      @filter="onFilter"
-    />
-    <LogViewer
-      :lines="filteredLines"
-      :search-pattern="searchPattern"
-    />
+    <template v-if="activeFileData.kind === 'json'">
+      <JsonViewer :content="activeFileData.rawContent" />
+    </template>
+    <template v-else>
+      <FilterBar
+        :total-count="activeFileData.lines.length"
+        :filtered-count="filteredLines.length"
+        @filter="onFilter"
+      />
+      <LogViewer
+        :lines="filteredLines"
+        :search-pattern="searchPattern"
+      />
+    </template>
   </div>
   <div v-else class="flex-1 flex items-center justify-center text-text-muted">
     <div class="text-center">
@@ -23,6 +28,7 @@ import { ref, computed } from "vue";
 import type { OpenFile, FilterState, LogLine } from "../lib/types";
 import FilterBar from "../components/FilterBar.vue";
 import LogViewer from "../components/LogViewer.vue";
+import JsonViewer from "../components/JsonViewer.vue";
 
 const props = defineProps<{
   activeFile: string | null;

@@ -31,10 +31,14 @@ export interface LogLine {
   content: string;
 }
 
+/** The kind of file that was opened */
+export type FileKind = "log" | "json" | "text";
+
 /** An opened file in the viewer */
 export interface OpenFile {
   path: string;
   name: string;
+  kind: FileKind;
   lines: LogLine[];
   rawContent: string;
 }
