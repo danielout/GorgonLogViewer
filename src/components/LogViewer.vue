@@ -131,16 +131,11 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-// Auto-scroll to bottom when tailing, reset scroll when lines array is replaced entirely
-let prevLinesRef: LogLine[] | null = null;
-watch(() => props.lines, (newLines) => {
-  if (!containerRef.value) return;
+// Track which line number is at the top of the viewport for scroll preservation
+let prevFirstLineNumber: number | null = null;
 
-  // Lines array replaced (different file or re-parse) — reset to top
-  if (prevLinesRef !== null && newLines !== prevLinesRef && !props.autoScroll) {
-    containerRef.value.scrollTop = 0;
-    scrollTop.value = 0;
-  }
+watch(() => props.lines, (newLines, oldLines) => {
+  if (!containerRef.value) return;
 
   // Auto-scroll to bottom when tailing
   if (props.autoScroll) {
@@ -150,10 +145,47 @@ watch(() => props.lines, (newLines) => {
         scrollTop.value = containerRef.value.scrollTop;
       }
     });
+  
+    return;
   }
 
-  prevLinesRef = newLines;
-}, { deep: true });
+  // Different file entirely (no old lines, or first line number jumped drastically) — reset to top
+  if (!oldLines || oldLines.length === 0) {
+    containerRef.value.scrollTop = 0;
+    scrollTop.value = 0;
+  
+    return;
+  }
+
+  // Filter changed — try to keep the same line visible
+  if (prevFirstLineNumber !== null && newLines.length > 0) {
+    const targetLine = prevFirstLineNumber;
+    // Find the index of the first line at or after our previous position
+    let bestIdx = 0;
+    for (let i = 0; i < newLines.length; i++) {
+      if (newLines[i].lineNumber >= targetLine) {
+        bestIdx = i;
+        break;
+      }
+      bestIdx = i;
+    }
+    nextTick(() => {
+      if (containerRef.value) {
+        containerRef.value.scrollTop = bestIdx * LINE_HEIGHT;
+        scrollTop.value = containerRef.value.scrollTop;
+      }
+    });
+  }
+
+
+});
+
+// Keep track of which original line number is at the top of the viewport
+watch(startIndex, () => {
+  if (props.lines.length > 0 && startIndex.value < props.lines.length) {
+    prevFirstLineNumber = props.lines[startIndex.value]?.lineNumber ?? null;
+  }
+});
 
 function escapeHtml(str: string): string {
   return str
