@@ -2,7 +2,7 @@
 
 ## Actionable Tasks
 
-(none — all current items complete!)
+- build a release script so we can cut release builds
 
 ### Done
 - ~~setup automatic release note generation with commit tagging conventions~~

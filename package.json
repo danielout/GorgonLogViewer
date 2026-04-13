@@ -9,7 +9,8 @@
     "build": "tsx scripts/generate-reference.ts && vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "release-notes": "bash scripts/generate-release-notes.sh"
+    "release-notes": "bash scripts/generate-release-notes.sh",
+    "release": "bash scripts/release.sh"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
