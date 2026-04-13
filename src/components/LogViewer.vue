@@ -149,15 +149,21 @@ watch(() => props.lines, (newLines, oldLines) => {
     return;
   }
 
-  // Different file entirely (no old lines, or first line number jumped drastically) — reset to top
+  // Different file entirely — reset to top
   if (!oldLines || oldLines.length === 0) {
     containerRef.value.scrollTop = 0;
     scrollTop.value = 0;
-  
+    prevFirstLineNumber = newLines[0]?.lineNumber ?? null;
     return;
   }
 
-  // Filter changed — try to keep the same line visible
+  // If we haven't tracked a position yet, use the first visible line
+  if (prevFirstLineNumber === null && newLines.length > 0) {
+    const idx = Math.floor(containerRef.value.scrollTop / LINE_HEIGHT);
+    prevFirstLineNumber = (oldLines[idx] ?? oldLines[0])?.lineNumber ?? null;
+  }
+
+  // Filter changed — preserve scroll position
   if (prevFirstLineNumber !== null && newLines.length > 0) {
     const targetLine = prevFirstLineNumber;
     // Find the index of the first line at or after our previous position
@@ -167,7 +173,6 @@ watch(() => props.lines, (newLines, oldLines) => {
         bestIdx = i;
         break;
       }
-      bestIdx = i;
     }
     nextTick(() => {
       if (containerRef.value) {
