@@ -18,7 +18,7 @@
           @mouseleave="hideTooltip"
         >
           <span class="w-14 shrink-0 text-right pr-3 text-text-muted select-none">{{ line.lineNumber }}</span>
-          <span v-if="line.timestamp" class="shrink-0 pr-3 text-log-timestamp select-none">{{ line.timestamp }}</span>
+          <span class="w-36 shrink-0 pr-3 text-log-timestamp select-none">{{ line.timestamp ?? '' }}</span>
           <span class="whitespace-pre-wrap break-all min-w-0" v-html="highlightSearch(line.content, line)"></span>
         </div>
       </div>
