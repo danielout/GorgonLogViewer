@@ -31,21 +31,33 @@
 
       <div
         v-if="showTypeFilter"
-        class="absolute right-0 top-full mt-1 bg-bg-surface border border-border rounded shadow-lg z-10 p-2 min-w-48"
+        class="absolute right-0 top-full mt-1 bg-bg-surface border border-border rounded shadow-lg z-10 p-2 min-w-52 max-h-80 overflow-y-auto"
       >
-        <label
-          v-for="lt in availableTypes"
-          :key="lt"
-          class="flex items-center gap-2 px-2 py-1 text-sm cursor-pointer hover:bg-bg-hover rounded"
-        >
-          <input
-            type="checkbox"
-            :checked="enabledTypes.has(lt)"
-            @change="toggleType(lt)"
-            class="accent-accent"
-          />
-          <span :class="typeColorClass(lt)">{{ typeLabel(lt) }}</span>
-        </label>
+        <template v-for="group in groupedTypes" :key="group.label">
+          <div class="flex items-center gap-2 px-2 py-1 text-xs text-text-muted cursor-pointer hover:text-text-secondary" @click="toggleGroup(group)">
+            <input
+              type="checkbox"
+              :checked="isGroupFullyEnabled(group)"
+              :indeterminate="isGroupPartiallyEnabled(group)"
+              class="accent-accent"
+              @click.stop="toggleGroup(group)"
+            />
+            <span class="font-semibold uppercase tracking-wider">{{ group.label }}</span>
+          </div>
+          <label
+            v-for="lt in group.types"
+            :key="lt"
+            class="flex items-center gap-2 px-2 py-1 pl-6 text-sm cursor-pointer hover:bg-bg-hover rounded"
+          >
+            <input
+              type="checkbox"
+              :checked="enabledTypes.has(lt)"
+              @change="toggleType(lt)"
+              class="accent-accent"
+            />
+            <span :class="typeColorClass(lt)">{{ typeLabel(lt) }}</span>
+          </label>
+        </template>
       </div>
     </div>
 
@@ -146,6 +158,63 @@ watch(() => props.availableTypes, (types) => {
 
 const enabledCount = computed(() => enabledTypes.value.size);
 const disabledCount = computed(() => props.availableTypes.length - enabledTypes.value.size);
+
+interface TypeGroup {
+  label: string;
+  types: LogLineType[];
+}
+
+const TYPE_GROUP_ORDER: [string, LogLineType[]][] = [
+  ["Chat", ["chat-global", "chat-help", "chat-nearby", "chat-guild", "chat-trade", "chat-party", "chat-tell", "chat-emote", "chat-announcement", "chat-info", "chat-error", "chat-custom"]],
+  ["Combat", ["combat", "effect", "attribute"]],
+  ["Items", ["item", "vendor"]],
+  ["Skills", ["skill"]],
+  ["Quests", ["quest"]],
+  ["Social", ["interaction", "npc", "action"]],
+  ["World", ["status", "mount", "weather", "system", "unknown"]],
+];
+
+const groupedTypes = computed<TypeGroup[]>(() => {
+  const available = new Set(props.availableTypes);
+  const groups: TypeGroup[] = [];
+  const used = new Set<LogLineType>();
+
+  for (const [label, candidates] of TYPE_GROUP_ORDER) {
+    const types = candidates.filter((t) => available.has(t));
+    if (types.length > 0) {
+      groups.push({ label, types });
+      types.forEach((t) => used.add(t));
+    }
+  }
+
+  // Catch any types not in a defined group
+  const ungrouped = props.availableTypes.filter((t) => !used.has(t));
+  if (ungrouped.length > 0) {
+    groups.push({ label: "Other", types: ungrouped });
+  }
+
+  return groups;
+});
+
+function isGroupFullyEnabled(group: TypeGroup): boolean {
+  return group.types.every((t) => enabledTypes.value.has(t));
+}
+
+function isGroupPartiallyEnabled(group: TypeGroup): boolean {
+  const count = group.types.filter((t) => enabledTypes.value.has(t)).length;
+  return count > 0 && count < group.types.length;
+}
+
+function toggleGroup(group: TypeGroup) {
+  const s = new Set(enabledTypes.value);
+  if (isGroupFullyEnabled(group)) {
+    group.types.forEach((t) => s.delete(t));
+  } else {
+    group.types.forEach((t) => s.add(t));
+  }
+  enabledTypes.value = s;
+  emitFilter();
+}
 
 /** Get current state for saving as a preset */
 function getCurrentState() {
