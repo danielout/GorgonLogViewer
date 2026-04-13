@@ -43,6 +43,8 @@ const TITLE_CATEGORY_MAP: Record<string, string> = {
   "Practical Patterns": "Event Patterns",
   "Player-to-Player Interaction Events": "P2P Interaction",
   "Engine & Rendering Events": "Engine & Rendering",
+  "Non-Process Timestamped Events": "Non-Process Events",
+  "Startup & System Lines": "Startup & System",
   // Legacy monolithic file
   "Player.log Event Reference": "Items & Inventory",
 };
@@ -133,6 +135,8 @@ const CATEGORY_TAGS: Record<string, string[]> = {
   "World & UI": ["ui", "world"],
   "P2P Interaction": ["p2p", "trade", "group"],
   "Engine & Rendering": ["engine", "rendering", "internal"],
+  "Non-Process Events": ["combat", "ability", "network", "audio", "rendering"],
+  "Startup & System": ["startup", "init", "system", "engine"],
 };
 
 function parseMarkdown(content: string, fileDefaultCategory?: string): ParsedEvent[] {

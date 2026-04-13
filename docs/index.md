@@ -19,6 +19,8 @@ Event reference docs, split by category. These are the source of truth — the a
 - [world-ui.md](log-parsing/world-ui.md) — Map, UI, guild, error, titles, and misc events
 - [p2p-interaction.md](log-parsing/p2p-interaction.md) — Player-to-player trade and group events
 - [engine.md](log-parsing/engine.md) — Engine/rendering events, entity state, and stack-trace-only entries
+- [non-process-events.md](log-parsing/non-process-events.md) — Non-Process timestamped events (combat hits, abilities, network, audio)
+- [startup-system.md](log-parsing/startup-system.md) — Non-timestamped startup, init, stack traces, and system lines
 - [patterns.md](log-parsing/patterns.md) — Practical multi-event patterns and architecture notes
 - [log-todo.md](log-parsing/log-todo.md) — Tracking remaining log format documentation work
 

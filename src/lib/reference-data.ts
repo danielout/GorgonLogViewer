@@ -262,6 +262,8 @@ export const refCategories = [
   "World & UI",
   "P2P Interaction",
   "Engine & Rendering",
+  "Non-Process Events",
+  "Startup & System",
   "Chat Channels",
   "CDN Data",
   "Event Patterns",
