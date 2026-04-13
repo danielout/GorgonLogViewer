@@ -8,9 +8,7 @@
       >
         <span class="text-text-muted w-4 text-center select-none">{{ expanded ? '▼' : '▶' }}</span>
         <span v-if="label" class="text-accent">{{ label }}</span>
-        <span class="text-text-muted">
-          {{ isArray ? `[${itemCount}]` : `{${itemCount}}` }}
-        </span>
+        <span class="text-text-muted">{{ bracketLabel }}</span>
       </button>
       <div v-if="expanded">
         <JsonNode
@@ -57,6 +55,10 @@ const childKeys = computed(() => {
 });
 
 const itemCount = computed(() => childKeys.value.length);
+
+const bracketLabel = computed(() =>
+  isArray.value ? `[${itemCount.value}]` : `{${itemCount.value}}`
+);
 
 const displayValue = computed(() => {
   if (props.data === null) return "null";
