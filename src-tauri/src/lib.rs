@@ -11,6 +11,22 @@ struct WatchState {
 }
 
 #[tauri::command]
+fn get_default_log_path() -> Option<String> {
+    let local_low = dirs::data_local_dir()?;
+    // data_local_dir returns AppData/Local on Windows; we need LocalLow
+    let local_low = local_low.parent()?.join("LocalLow");
+    let player_log = local_low
+        .join("Elder Game")
+        .join("Project Gorgon")
+        .join("Player.log");
+    if player_log.exists() {
+        Some(player_log.to_string_lossy().to_string())
+    } else {
+        None
+    }
+}
+
+#[tauri::command]
 fn read_log_file(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| format!("Failed to read {}: {}", path, e))
 }
@@ -99,6 +115,7 @@ pub fn run() {
             offsets: HashMap::new(),
         }))
         .invoke_handler(tauri::generate_handler![
+            get_default_log_path,
             read_log_file,
             start_tailing,
             stop_tailing

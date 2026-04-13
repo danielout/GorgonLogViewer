@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
-import { readLogFile, startTailing, stopTailing, onTailUpdate } from "./lib/tauri-bridge";
+import { getDefaultLogPath, readLogFile, startTailing, stopTailing, onTailUpdate } from "./lib/tauri-bridge";
 import { parseLogFile, parseLogLines } from "./lib/log-parser";
 import type { OpenFile, FileKind } from "./lib/types";
 import type { UnlistenFn } from "@tauri-apps/api/event";
@@ -38,6 +38,24 @@ onMounted(async () => {
     file.lines.push(...newLines);
     file.rawContent += update.content;
   });
+
+  // Auto-open default Player.log and start tailing
+  const defaultPath = await getDefaultLogPath();
+  if (defaultPath) {
+    const content = await readLogFile(defaultPath);
+    const fileName = defaultPath.split(/[\\/]/).pop() || defaultPath;
+    const lines = parseLogFile(content, defaultPath);
+    openFiles.value.push({
+      path: defaultPath,
+      name: fileName,
+      kind: "log",
+      lines,
+      rawContent: content,
+      tailing: true,
+    });
+    activeFile.value = defaultPath;
+    await startTailing(defaultPath);
+  }
 });
 
 onUnmounted(() => {

@@ -1,6 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
+/** Get the default Player.log path if it exists */
+export async function getDefaultLogPath(): Promise<string | null> {
+  return invoke<string | null>("get_default_log_path");
+}
+
 /** Read a log file's full content via the Rust backend */
 export async function readLogFile(path: string): Promise<string> {
   return invoke<string>("read_log_file", { path });
