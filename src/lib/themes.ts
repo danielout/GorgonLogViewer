@@ -5,8 +5,8 @@ export interface Theme {
 }
 
 export const defaultTheme: Theme = {
-  name: "Catppuccin Mocha",
-  id: "catppuccin-mocha",
+  name: "Pleasant Povus",
+  id: "pleasant-povus",
   colors: {
     "bg-primary": "#1e1e2e",
     "bg-secondary": "#181825",
@@ -55,8 +55,8 @@ export const defaultTheme: Theme = {
 export const builtInThemes: Theme[] = [
   defaultTheme,
   {
-    name: "Gorgon Dark",
-    id: "gorgon-dark",
+    name: "Grim Gazluk",
+    id: "grim-gazluk",
     colors: {
       "bg-primary": "#1a1a2e",
       "bg-secondary": "#16213e",
@@ -102,8 +102,8 @@ export const builtInThemes: Theme[] = [
     },
   },
   {
-    name: "Light",
-    id: "light",
+    name: "Sun Vale Bright",
+    id: "sun-vale-bright",
     colors: {
       "bg-primary": "#ffffff",
       "bg-secondary": "#f5f5f5",
