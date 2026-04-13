@@ -1,10 +1,15 @@
 import type { LogLineType } from "./types";
 import { generatedEventInfoMap } from "./generated/reference-entries";
 
+export interface EventFieldInfo {
+  name: string;
+  type: string;
+}
+
 export interface EventInfo {
   name: string;
   summary: string;
-  fields?: string[];
+  fields?: EventFieldInfo[];
 }
 
 /** Chat log channel → reference info */

@@ -39,4 +39,11 @@
   --color-log-mount: #94e2d5;
   --color-log-weather: #89dceb;
   --color-log-timestamp: #585b70;
+
+  /* Syntax highlighting for arguments */
+  --color-syn-number: #fab387;
+  --color-syn-string: #a6e3a1;
+  --color-syn-bool: #cba6f7;
+  --color-syn-keyword: #89b4fa;
+  --color-syn-paren: #6c7086;
 }

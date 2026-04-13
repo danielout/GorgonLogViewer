@@ -317,7 +317,7 @@ function generateTypeScript(events: ParsedEvent[]): string {
   for (const e of events) {
     const escapedName = e.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const fieldsStr = e.fields.length > 0
-      ? JSON.stringify(e.fields.map((f) => f.name))
+      ? JSON.stringify(e.fields.map((f) => ({ name: f.name, type: f.type })))
       : "undefined";
     lines.push(`  [/${escapedName}/, { name: ${JSON.stringify(e.name)}, summary: ${JSON.stringify(e.summary)}, fields: ${fieldsStr} }],`);
   }

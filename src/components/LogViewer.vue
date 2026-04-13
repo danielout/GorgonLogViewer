@@ -19,7 +19,7 @@
         >
           <span class="w-14 shrink-0 text-right pr-3 text-text-muted select-none">{{ line.lineNumber }}</span>
           <span v-if="line.timestamp" class="shrink-0 pr-3 text-log-timestamp select-none">{{ line.timestamp }}</span>
-          <span class="whitespace-pre-wrap break-all min-w-0" v-html="highlightSearch(line.content)"></span>
+          <span class="whitespace-pre-wrap break-all min-w-0" v-html="highlightSearch(line.content, line)"></span>
         </div>
       </div>
     </div>
@@ -161,16 +161,54 @@ function escapeHtml(str: string): string {
     .replace(/>/g, "&gt;");
 }
 
-function highlightSearch(content: string): string {
+function syntaxHighlight(text: string): string {
+  // Apply syntax coloring to arguments in Process* event lines
+  // Order matters — strings first (so numbers inside strings don't get double-wrapped)
+  let result = text;
+
+  // Quoted strings: "..."
+  result = result.replace(/&quot;([^&]*?)&quot;|"([^"]*?)"/g, (m) =>
+    `<span class="text-syn-string">${m}</span>`
+  );
+
+  // Booleans: True/False
+  result = result.replace(/\b(True|False)\b/g,
+    `<span class="text-syn-bool">$1</span>`
+  );
+
+  // Numbers: integers and floats (including negative)
+  result = result.replace(/(?<![A-Za-z_\-"])(-?\b\d+\.?\d*)\b(?![A-Za-z_"])/g,
+    `<span class="text-syn-number">$1</span>`
+  );
+
+  // Event/method names: Process* and other PascalCase identifiers before (
+  result = result.replace(/\b(Process\w+|LocalPlayer)\b/g,
+    `<span class="text-syn-keyword">$1</span>`
+  );
+
+  // Parentheses and brackets
+  result = result.replace(/([()[\]{}])/g,
+    `<span class="text-syn-paren">$1</span>`
+  );
+
+  return result;
+}
+
+function highlightSearch(content: string, line: LogLine): string {
   const escaped = escapeHtml(content);
-  if (!props.searchPattern) return escaped;
+
+  // Apply syntax highlighting for .log files (not chat logs)
+  const isChatLine = line.type.startsWith("chat-");
+  const highlighted = isChatLine ? escaped : syntaxHighlight(escaped);
+
+  if (!props.searchPattern) return highlighted;
 
   try {
-    return escaped.replace(props.searchPattern, (match) =>
+    return highlighted.replace(props.searchPattern, (match) =>
       `<mark class="bg-accent/30 text-inherit rounded px-0.5">${match}</mark>`
     );
   } catch {
-    return escaped;
+    return highlighted;
   }
 }
 
