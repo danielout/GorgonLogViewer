@@ -175,6 +175,17 @@ function classifyNonTimestamped(raw: string): ClassifyResult {
   return { type: "system", eventName: null };
 }
 
+/** Parse timezone offset from a chat log's first line. Returns offset in ms from UTC. */
+export function parseChatLogTimezoneOffset(content: string): number | null {
+  const match = content.match(/Timezone Offset ([+-])(\d{2}):(\d{2}):(\d{2})/);
+  if (!match) return null;
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = parseInt(match[2]);
+  const minutes = parseInt(match[3]);
+  const seconds = parseInt(match[4]);
+  return sign * (hours * 3600000 + minutes * 60000 + seconds * 1000);
+}
+
 function classifyChatLogLine(content: string): ClassifyResult {
   const match = content.match(CHAT_CHANNEL);
   if (match) {

@@ -27,7 +27,7 @@
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getDefaultLogPath, readLogFile, startTailing, stopTailing, onTailUpdate } from "./lib/tauri-bridge";
-import { parseLogFile, parseLogLines } from "./lib/log-parser";
+import { parseLogFile, parseLogLines, parseChatLogTimezoneOffset } from "./lib/log-parser";
 import type { OpenFile, FileKind } from "./lib/types";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import Sidebar from "./components/Sidebar.vue";
@@ -68,6 +68,7 @@ onMounted(async () => {
       lines,
       rawContent: content,
       tailing: true,
+      timezoneOffsetMs: null,
     });
     activeFile.value = defaultPath;
     await startTailing(defaultPath);
@@ -96,6 +97,9 @@ async function openFilePath(filePath: string) {
   const kind = detectFileKind(fileName);
   const lines = kind === "json" ? [] : parseLogFile(content, filePath);
 
+  const isChatLog = fileName.toLowerCase().startsWith("chat");
+  const timezoneOffsetMs = isChatLog ? parseChatLogTimezoneOffset(content) : null;
+
   openFiles.value.push({
     path: filePath,
     name: fileName,
@@ -103,6 +107,7 @@ async function openFilePath(filePath: string) {
     lines,
     rawContent: content,
     tailing: false,
+    timezoneOffsetMs,
   });
 
   activeFile.value = filePath;

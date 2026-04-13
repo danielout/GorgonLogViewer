@@ -66,6 +66,8 @@ export interface OpenFile {
   lines: LogLine[];
   rawContent: string;
   tailing: boolean;
+  /** Timezone offset in ms from UTC (parsed from chat log header), null for player.log */
+  timezoneOffsetMs: number | null;
 }
 
 /** A custom highlight rule: matches lines by pattern and applies a color */
