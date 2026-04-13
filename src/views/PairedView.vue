@@ -79,41 +79,17 @@ const leftViewer = ref<InstanceType<typeof LogViewer> | null>(null);
 const rightViewer = ref<InstanceType<typeof LogViewer> | null>(null);
 
 /**
- * Get time-of-day in ms, normalized to local time.
- *
- * Player.log timestamps are UTC — we add the timezone offset to get local time.
- * Chat log timestamps are already local time — no conversion needed (offset is stored on the file).
- *
- * When timezoneOffsetMs is null (player.log), we apply the offset from the
- * chat log we're syncing with. When it's set (chat log), the timestamps
- * are already local, so we use them as-is.
+ * Find the line in the file closest to the given UTC time.
+ * All timestampDate values are already normalized to UTC by the parser,
+ * so we just compare milliseconds directly.
  */
-function toLocalTimeOfDayMs(d: Date, isAlreadyLocal: boolean, offsetMs: number): number {
-  const raw = d.getHours() * 3600000 + d.getMinutes() * 60000 + d.getSeconds() * 1000;
-  if (isAlreadyLocal) return raw;
-  // Player.log time is UTC; add offset to convert to local
-  const MS_PER_DAY = 86400000;
-  return ((raw + offsetMs) % MS_PER_DAY + MS_PER_DAY) % MS_PER_DAY;
-}
-
-/**
- * Resolve the timezone offset to use for conversion.
- * Chat logs have the offset stored; player.logs don't.
- * We look at whichever file has an offset to use for both.
- */
-function resolveOffsetMs(): number {
-  return leftFile.value?.timezoneOffsetMs ?? rightFile.value?.timezoneOffsetMs ?? 0;
-}
-
-function findClosestLineIndex(file: OpenFile, targetLocalTodMs: number, offsetMs: number): number {
-  const isLocal = file.timezoneOffsetMs !== null; // chat log = local, player.log = UTC
+function findClosestLineIndex(file: OpenFile, targetUtcMs: number): number {
   let closest = 0;
   let closestDiff = Infinity;
   for (let i = 0; i < file.lines.length; i++) {
     const line = file.lines[i];
     if (!line.timestampDate) continue;
-    const lineTod = toLocalTimeOfDayMs(line.timestampDate, isLocal, offsetMs);
-    const diff = Math.abs(lineTod - targetLocalTodMs);
+    const diff = Math.abs(line.timestampDate.getTime() - targetUtcMs);
     if (diff < closestDiff) {
       closestDiff = diff;
       closest = i;
@@ -123,20 +99,14 @@ function findClosestLineIndex(file: OpenFile, targetLocalTodMs: number, offsetMs
 }
 
 function onLeftScroll(time: Date) {
-  if (!syncScroll.value || !rightFile.value || !rightViewer.value || !leftFile.value) return;
-  const offsetMs = resolveOffsetMs();
-  const isLocal = leftFile.value.timezoneOffsetMs !== null;
-  const localTod = toLocalTimeOfDayMs(time, isLocal, offsetMs);
-  const idx = findClosestLineIndex(rightFile.value, localTod, offsetMs);
+  if (!syncScroll.value || !rightFile.value || !rightViewer.value) return;
+  const idx = findClosestLineIndex(rightFile.value, time.getTime());
   rightViewer.value.scrollToIndex(idx);
 }
 
 function onRightScroll(time: Date) {
-  if (!syncScroll.value || !leftFile.value || !leftViewer.value || !rightFile.value) return;
-  const offsetMs = resolveOffsetMs();
-  const isLocal = rightFile.value.timezoneOffsetMs !== null;
-  const localTod = toLocalTimeOfDayMs(time, isLocal, offsetMs);
-  const idx = findClosestLineIndex(leftFile.value, localTod, offsetMs);
+  if (!syncScroll.value || !leftFile.value || !leftViewer.value) return;
+  const idx = findClosestLineIndex(leftFile.value, time.getTime());
   leftViewer.value.scrollToIndex(idx);
 }
 </script>

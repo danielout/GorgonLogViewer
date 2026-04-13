@@ -195,21 +195,33 @@ function classifyChatLogLine(content: string): ClassifyResult {
   return { type: "unknown", eventName: null };
 }
 
-function parseTimestampDate(ts: string): Date | null {
-  // Chat log format: YY-MM-DD HH:MM:SS
+/**
+ * Parse a timestamp string into a UTC Date.
+ *
+ * Player.log: [HH:MM:SS] — already UTC, use today's date.
+ * Chat log: YY-MM-DD HH:MM:SS — local time, subtract the timezone
+ *           offset to convert to UTC.
+ *
+ * @param offsetMs - timezone offset in ms for chat logs (local→UTC: subtract this).
+ *                   null for player.log (already UTC).
+ */
+function parseTimestampDate(ts: string, offsetMs: number | null): Date | null {
+  // Chat log format: YY-MM-DD HH:MM:SS (local time)
   const chatMatch = ts.match(/^(\d{2})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
   if (chatMatch) {
     const [, yy, mm, dd, hh, min, ss] = chatMatch;
-    return new Date(2000 + parseInt(yy), parseInt(mm) - 1, parseInt(dd), parseInt(hh), parseInt(min), parseInt(ss));
+    // Build as UTC, then subtract offset to convert local→UTC
+    const utcMs = Date.UTC(2000 + parseInt(yy), parseInt(mm) - 1, parseInt(dd), parseInt(hh), parseInt(min), parseInt(ss));
+    return new Date(utcMs - (offsetMs ?? 0));
   }
 
-  // Player.log format: HH:MM:SS (no date, use today)
+  // Player.log format: HH:MM:SS (already UTC, use today's date)
   const playerMatch = ts.match(/^(\d{2}):(\d{2}):(\d{2})$/);
   if (playerMatch) {
     const [, hh, min, ss] = playerMatch;
-    const d = new Date();
-    d.setHours(parseInt(hh), parseInt(min), parseInt(ss), 0);
-    return d;
+    const now = new Date();
+    const utcMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), parseInt(hh), parseInt(min), parseInt(ss));
+    return new Date(utcMs);
   }
 
   return null;
@@ -225,6 +237,8 @@ export function parseLogFile(content: string, filePath: string): LogLine[] {
   const chatMode = isChatLog(filePath);
   const tsPattern = chatMode ? CHAT_LOG_TS : PLAYER_LOG_TS;
   const classify = chatMode ? classifyChatLogLine : classifyPlayerLogLine;
+  // For chat logs, extract the timezone offset from the first line to convert to UTC
+  const offsetMs = chatMode ? parseChatLogTimezoneOffset(content) : null;
 
   const lines: LogLine[] = [];
 
@@ -242,7 +256,7 @@ export function parseLogFile(content: string, filePath: string): LogLine[] {
       lineNumber: i + 1,
       raw,
       timestamp,
-      timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
+      timestampDate: timestamp ? parseTimestampDate(timestamp, offsetMs) : null,
       type: classified.type,
       content,
       eventName: classified.eventName,
@@ -253,11 +267,12 @@ export function parseLogFile(content: string, filePath: string): LogLine[] {
 }
 
 /** Parse incremental content (new lines appended to a file) starting from a given line number */
-export function parseLogLines(content: string, filePath: string, startLineNumber: number): LogLine[] {
+export function parseLogLines(content: string, filePath: string, startLineNumber: number, offsetMs?: number | null): LogLine[] {
   const rawLines = content.split(/\r?\n/);
   const chatMode = isChatLog(filePath);
   const tsPattern = chatMode ? CHAT_LOG_TS : PLAYER_LOG_TS;
   const classify = chatMode ? classifyChatLogLine : classifyPlayerLogLine;
+  const tsOffsetMs = offsetMs ?? null;
 
   const lines: LogLine[] = [];
 
@@ -275,7 +290,7 @@ export function parseLogLines(content: string, filePath: string, startLineNumber
       lineNumber: startLineNumber + i,
       raw,
       timestamp,
-      timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
+      timestampDate: timestamp ? parseTimestampDate(timestamp, tsOffsetMs) : null,
       type: classified.type,
       content: lineContent,
       eventName: classified.eventName,

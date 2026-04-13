@@ -50,7 +50,7 @@ onMounted(async () => {
   unlistenTail = await onTailUpdate((update) => {
     const file = openFiles.value.find((f) => f.path === update.path);
     if (!file || !file.tailing) return;
-    const newLines = parseLogLines(update.content, file.path, file.lines.length + 1);
+    const newLines = parseLogLines(update.content, file.path, file.lines.length + 1, file.timezoneOffsetMs);
     file.lines.push(...newLines);
     file.rawContent += update.content;
   });
