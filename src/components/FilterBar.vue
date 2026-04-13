@@ -157,6 +157,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import type { LogLineType, FilterState, ViewPreset } from "../lib/types";
 import { typeColorClass, typeLabel } from "../lib/log-colors";
+import { generatedFilterCategories } from "../lib/generated/reference-entries";
 import PresetMenu from "./PresetMenu.vue";
 
 const props = defineProps<{
@@ -202,29 +203,20 @@ interface TypeGroup {
   types: LogLineType[];
 }
 
-const TYPE_GROUP_ORDER: [string, LogLineType[]][] = [
-  ["Chat", ["chat-global", "chat-help", "chat-nearby", "chat-guild", "chat-trade", "chat-party", "chat-tell", "chat-emote", "chat-announcement", "chat-info", "chat-error", "chat-custom"]],
-  ["Combat", ["combat", "effect", "attribute"]],
-  ["Items", ["item", "vendor"]],
-  ["Skills", ["skill"]],
-  ["Quests", ["quest"]],
-  ["Social", ["interaction", "npc", "action"]],
-  ["World", ["status", "mount", "weather", "system", "unknown"]],
-];
-
 const groupedTypes = computed<TypeGroup[]>(() => {
   const available = new Set(props.availableTypes);
   const groups: TypeGroup[] = [];
   const used = new Set<LogLineType>();
 
-  for (const [label, candidates] of TYPE_GROUP_ORDER) {
-    const types = candidates.filter((t) => available.has(t));
+  for (const category of generatedFilterCategories) {
+    const types = category.types.filter((t) => available.has(t));
     if (types.length > 0) {
-      groups.push({ label, types });
+      groups.push({ label: category.label, types });
       types.forEach((t) => used.add(t));
     }
   }
 
+  // Catch any types not covered by a generated category
   const ungrouped = props.availableTypes.filter((t) => !used.has(t));
   if (ungrouped.length > 0) {
     groups.push({ label: "Other", types: ungrouped });

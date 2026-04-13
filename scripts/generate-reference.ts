@@ -323,6 +323,68 @@ function generateTypeScript(events: ParsedEvent[]): string {
   }
   lines.push("]);");
 
+  // Generate category → LogLineType mapping for filter bar
+  // This maps reference categories to the LogLineType values used by the parser
+  const CATEGORY_TO_LINE_TYPES: Record<string, string[]> = {
+    "Chat Channels": [
+      "chat-global", "chat-help", "chat-nearby", "chat-guild", "chat-trade",
+      "chat-party", "chat-tell", "chat-emote", "chat-announcement", "chat-info",
+      "chat-error", "chat-custom",
+    ],
+    "Items & Inventory": ["item"],
+    "Skills & Abilities": ["skill"],
+    "NPC Interaction": ["interaction"],
+    "Player Status": ["attribute", "mount", "weather", "status"],
+    "Effects & Buffs": ["effect"],
+    "Quests": ["quest"],
+    "Combat": ["combat"],
+    "Vendors": ["vendor"],
+    "World & UI": ["system", "unknown"],
+    "P2P Interaction": ["interaction"],
+    "Engine & Rendering": ["system"],
+    "Non-Process Events": ["combat", "system"],
+    "Startup & System": ["system"],
+    "Event Patterns": [],
+  };
+
+  // Deduplicate: collect unique categories in order, merge their types
+  const seenCategories: string[] = [];
+  const mergedCategoryTypes = new Map<string, Set<string>>();
+
+  for (const e of events) {
+    if (!mergedCategoryTypes.has(e.category)) {
+      seenCategories.push(e.category);
+      mergedCategoryTypes.set(e.category, new Set());
+    }
+    const types = CATEGORY_TO_LINE_TYPES[e.category] ?? ["system"];
+    for (const t of types) {
+      mergedCategoryTypes.get(e.category)!.add(t);
+    }
+  }
+  // Add Chat Channels (not generated from docs)
+  if (!mergedCategoryTypes.has("Chat Channels")) {
+    seenCategories.unshift("Chat Channels");
+    mergedCategoryTypes.set("Chat Channels", new Set(CATEGORY_TO_LINE_TYPES["Chat Channels"]));
+  }
+
+  lines.push("");
+  lines.push('import type { LogLineType } from "../types";');
+  lines.push("");
+  lines.push("/** Filter category groups — generated from doc categories */");
+  lines.push("export const generatedFilterCategories: { label: string; types: LogLineType[] }[] = " + JSON.stringify(
+    seenCategories
+      .filter((c) => {
+        const types = mergedCategoryTypes.get(c);
+        return types && types.size > 0;
+      })
+      .map((c) => ({
+        label: c,
+        types: [...mergedCategoryTypes.get(c)!],
+      })),
+    null,
+    2,
+  ) + " as { label: string; types: LogLineType[] }[];");
+
   return lines.join("\n") + "\n";
 }
 
