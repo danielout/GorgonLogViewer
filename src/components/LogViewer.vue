@@ -31,6 +31,7 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import type { LogLine, HighlightRule } from "../lib/types";
 import { typeColorClass } from "../lib/log-colors";
+import { findScrollIndex } from "../lib/scroll-utils";
 import { getEventInfo, type EventInfo } from "../lib/event-reference";
 import LineTooltip from "./LineTooltip.vue";
 
@@ -191,16 +192,8 @@ watch(visibleStartIndex, () => {
 /** Scroll to the nearest line with the given original line number */
 function scrollToLineNumber(targetLineNumber: number) {
   if (!containerRef.value || props.lines.length === 0) return;
-  // Find the first line at or after the target
-  let bestIdx = 0;
-  for (let i = 0; i < props.lines.length; i++) {
-    if (props.lines[i].lineNumber >= targetLineNumber) {
-      bestIdx = i;
-      break;
-    }
-    bestIdx = i; // if target is past the end, go to last line
-  }
-  containerRef.value.scrollTop = bestIdx * LINE_HEIGHT;
+  const idx = findScrollIndex(props.lines, targetLineNumber);
+  containerRef.value.scrollTop = idx * LINE_HEIGHT;
   scrollTop.value = containerRef.value.scrollTop;
 }
 

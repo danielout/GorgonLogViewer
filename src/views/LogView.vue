@@ -221,14 +221,16 @@ function onGotoLine(lineNumber: number) {
 
 function onFilter(state: FilterState) {
   // Save current line before filter changes the lines array
-  const savedLine = currentLine.value;
+  const savedLine = currentLine.value ?? 1;
   filter.value = state;
-  // After Vue re-renders with new filtered lines, scroll back
-  if (savedLine !== null) {
-    nextTick(() => {
+  // Wait for Vue re-render AND browser layout before restoring scroll.
+  // nextTick alone isn't enough — the browser needs a frame to update
+  // the scroll container after the virtual list height changes.
+  nextTick(() => {
+    requestAnimationFrame(() => {
       logViewerRef.value?.scrollToLineNumber(savedLine);
     });
-  }
+  });
 }
 
 function onApplyConfig(config: FilterConfig) {
