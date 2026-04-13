@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "generate-reference": "tsx scripts/generate-reference.ts",
+    "dev": "tsx scripts/generate-reference.ts && vite",
+    "build": "tsx scripts/generate-reference.ts && vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "release-notes": "bash scripts/generate-release-notes.sh"
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "@vitejs/plugin-vue": "^5.2.1",
+    "tsx": "^4.21.0",
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
     "vue-tsc": "^2.1.10"
