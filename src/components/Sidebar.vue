@@ -47,6 +47,9 @@
         Single View
       </router-link>
     </div>
+    <div class="p-2 border-t border-border">
+      <ThemePicker />
+    </div>
     <div class="p-3 border-t border-border text-xs text-text-muted">
       v0.1.0
     </div>
@@ -55,6 +58,7 @@
 
 <script setup lang="ts">
 import type { OpenFile } from "../lib/types";
+import ThemePicker from "./ThemePicker.vue";
 
 defineProps<{
   openFiles: OpenFile[];
