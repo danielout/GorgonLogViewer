@@ -60,6 +60,32 @@ export interface OpenFile {
   tailing: boolean;
 }
 
+/** A custom highlight rule: matches lines by pattern and applies a color */
+export interface HighlightRule {
+  /** Display name for the rule */
+  name: string;
+  /** Text or regex pattern to match against the line */
+  pattern: string;
+  /** Whether pattern is a regex */
+  isRegex: boolean;
+  /** CSS color to apply (hex) */
+  color: string;
+  /** Whether this rule is active */
+  enabled: boolean;
+}
+
+/** A shareable filter configuration */
+export interface FilterConfig {
+  /** Display name */
+  name: string;
+  /** Unique ID */
+  id: string;
+  /** Which line types to show (null = show all) */
+  enabledTypes: LogLineType[] | null;
+  /** Custom highlight rules */
+  highlights: HighlightRule[];
+}
+
 /** Filter state for the log viewer */
 export interface FilterState {
   /** Text or regex search query */

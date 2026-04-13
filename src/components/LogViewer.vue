@@ -13,6 +13,7 @@
           :key="line.lineNumber"
           class="flex hover:bg-bg-hover/50 px-4 group"
           :class="typeColorClass(line.type)"
+          :style="getHighlightStyle(line)"
           @mouseenter="showTooltip($event, line)"
           @mouseleave="hideTooltip"
         >
@@ -28,7 +29,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
-import type { LogLine } from "../lib/types";
+import type { LogLine, HighlightRule } from "../lib/types";
 import { typeColorClass } from "../lib/log-colors";
 import { getEventInfo, type EventInfo } from "../lib/event-reference";
 import LineTooltip from "./LineTooltip.vue";
@@ -36,6 +37,7 @@ import LineTooltip from "./LineTooltip.vue";
 const props = defineProps<{
   lines: LogLine[];
   searchPattern: RegExp | null;
+  highlightRules?: HighlightRule[];
   autoScroll?: boolean;
 }>();
 
@@ -170,5 +172,26 @@ function highlightSearch(content: string): string {
   } catch {
     return escaped;
   }
+}
+
+function getHighlightStyle(line: LogLine): Record<string, string> {
+  if (!props.highlightRules?.length) return {};
+  for (const rule of props.highlightRules) {
+    try {
+      const re = rule.isRegex
+        ? new RegExp(rule.pattern, "i")
+        : new RegExp(escapeRegex(rule.pattern), "i");
+      if (re.test(line.raw)) {
+        return { color: rule.color };
+      }
+    } catch {
+      // invalid regex, skip
+    }
+  }
+  return {};
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 </script>

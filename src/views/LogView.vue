@@ -28,12 +28,22 @@
         :available-types="availableTypes"
         @filter="onFilter"
         @toggle-tailing="$emit('toggleTailing', activeFileData!.path)"
+        @toggle-config="showConfigPanel = !showConfigPanel"
       />
-      <LogViewer
-        :lines="filteredLines"
-        :search-pattern="searchPattern"
-        :auto-scroll="activeFileData.tailing"
-      />
+      <div class="flex flex-1 min-h-0">
+        <LogViewer
+          class="flex-1"
+          :lines="filteredLines"
+          :search-pattern="searchPattern"
+          :highlight-rules="activeHighlightRules"
+          :auto-scroll="activeFileData.tailing"
+        />
+        <FilterConfigPanel
+          v-if="showConfigPanel"
+          @close="showConfigPanel = false"
+          @apply="onApplyConfig"
+        />
+      </div>
     </template>
   </div>
   <div v-else class="flex-1 flex items-center justify-center text-text-muted">
@@ -46,12 +56,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import type { OpenFile, FilterState, LogLine, LogLineType } from "../lib/types";
+import type { OpenFile, FilterState, FilterConfig, HighlightRule, LogLine, LogLineType } from "../lib/types";
 import { analyzeCdnSchema } from "../lib/cdn-schema";
 import FilterBar from "../components/FilterBar.vue";
 import LogViewer from "../components/LogViewer.vue";
 import JsonViewer from "../components/JsonViewer.vue";
 import CdnSchemaView from "../components/CdnSchemaView.vue";
+import FilterConfigPanel from "../components/FilterConfigPanel.vue";
 
 const props = defineProps<{
   activeFile: string | null;
@@ -63,6 +74,8 @@ defineEmits<{
 }>();
 
 const jsonViewMode = ref<"tree" | "schema">("tree");
+const showConfigPanel = ref(false);
+const activeConfig = ref<FilterConfig | null>(null);
 
 const cdnSchema = computed(() => {
   if (!activeFileData.value || activeFileData.value.kind !== "json") return null;
@@ -96,6 +109,11 @@ const availableTypes = computed<LogLineType[]>(() => {
   return [...types].sort();
 });
 
+const activeHighlightRules = computed<HighlightRule[]>(() => {
+  if (!activeConfig.value) return [];
+  return activeConfig.value.highlights.filter((r) => r.enabled && r.pattern);
+});
+
 const searchPattern = computed<RegExp | null>(() => {
   if (!filter.value.search) return null;
   try {
@@ -112,9 +130,18 @@ const filteredLines = computed<LogLine[]>(() => {
   if (!activeFileData.value) return [];
   let lines = activeFileData.value.lines;
 
-  // Type filter
-  if (filter.value.enabledTypes.size > 0) {
-    lines = lines.filter((l) => filter.value.enabledTypes.has(l.type));
+  // Config type restriction (intersect with filter bar types)
+  const configTypes = activeConfig.value?.enabledTypes;
+  const filterTypes = filter.value.enabledTypes;
+
+  if (configTypes && configTypes.length > 0 && filterTypes.size > 0) {
+    const configSet = new Set(configTypes);
+    lines = lines.filter((l) => configSet.has(l.type) && filterTypes.has(l.type));
+  } else if (configTypes && configTypes.length > 0) {
+    const configSet = new Set(configTypes);
+    lines = lines.filter((l) => configSet.has(l.type));
+  } else if (filterTypes.size > 0) {
+    lines = lines.filter((l) => filterTypes.has(l.type));
   }
 
   // Time filter
@@ -144,6 +171,10 @@ const filteredLines = computed<LogLine[]>(() => {
 
 function onFilter(state: FilterState) {
   filter.value = state;
+}
+
+function onApplyConfig(config: FilterConfig) {
+  activeConfig.value = { ...config };
 }
 
 function escapeRegex(str: string): string {

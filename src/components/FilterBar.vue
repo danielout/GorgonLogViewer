@@ -87,6 +87,15 @@
       {{ tailing ? 'Tailing' : 'Tail' }}
     </button>
 
+    <!-- Config panel toggle -->
+    <button
+      class="text-sm px-3 py-1.5 rounded border border-border bg-bg-surface text-text-secondary hover:text-text-primary transition-colors"
+      title="Filter configurations"
+      @click="$emit('toggleConfig')"
+    >
+      Config
+    </button>
+
     <!-- Line count -->
     <span class="text-xs text-text-muted ml-auto whitespace-nowrap">
       {{ filteredCount }} / {{ totalCount }} lines
@@ -109,6 +118,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   filter: [state: FilterState];
   toggleTailing: [];
+  toggleConfig: [];
 }>();
 
 const searchText = ref("");
