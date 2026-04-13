@@ -20,7 +20,7 @@
 - Receiving items from NPCs/quests
 - Item entering inventory that creates a **new stack** (item you didn't already have a stack of)
 
-**Key behavior:** At login, every inventory item fires a ProcessAddItem with `isNew=False`. This is how we build the **instance ID → item name mapping**. Items acquired during gameplay fire with `isNew=True`.
+**Key behavior:** At login, every inventory item fires a ProcessAddItem with `isNew=False`. The `instanceId` and `InternalName` together establish which instance ID corresponds to which item. Items acquired during gameplay fire with `isNew=True`.
 
 ### ProcessUpdateItemCode — Existing stack updated
 
@@ -101,7 +101,7 @@ When this follows a ProcessDeleteItem with the same instanceId, the item was **m
 
 **When it fires:** On login. Known systems: `Gourmand` with `Initialize` action — contains list of food item IDs the player has eaten.
 
-**NOT YET PARSED.** Currently consumed by `gourmandStore` via separate mechanism.
+Known systems: `Gourmand` with `Initialize` action — contains list of food item IDs the player has eaten.
 
 ### ProcessSetLockedItems — Locked items
 
@@ -111,8 +111,6 @@ When this follows a ProcessDeleteItem with the same instanceId, the item was **m
 
 **When it fires:** On login. Items the player has locked/protected from accidental use.
 
-**NOT YET PARSED.**
-
 ### ProcessInventoryFolderSettings — Inventory UI state
 
 ```
@@ -121,8 +119,6 @@ When this follows a ProcessDeleteItem with the same instanceId, the item was **m
 
 **When it fires:** On login. Player's inventory folder/tab configuration.
 
-**NOT YET PARSED.**
-
 ### ProcessRemoveLoot — Loot removed
 
 ```
@@ -130,5 +126,3 @@ When this follows a ProcessDeleteItem with the same instanceId, the item was **m
 ```
 
 **When it fires:** Loot container removed from the world (after looting or timeout).
-
-**NOT YET PARSED.**

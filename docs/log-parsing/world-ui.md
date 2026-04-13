@@ -17,7 +17,6 @@
 
 **When it fires:** Survey results, resource discoveries, and other map-pinned events.
 
-**NOT YET PARSED** (but consumed by `SurveyParser` from raw lines).
 
 ### ProcessSetAreaSettings — Area configuration
 
@@ -27,7 +26,7 @@
 
 **When it fires:** On login and zone transitions. Contains area-specific settings.
 
-**NOT YET PARSED.** Serialized C# type — actual data content unknown.
+**Note:** Serialized C# type — actual data content is opaque.
 
 ### ProcessScreenText — On-screen notification
 
@@ -52,7 +51,6 @@
 
 **When it fires:** On login. Map exploration/fog-of-war state.
 
-**NOT YET PARSED.**
 
 ### ProcessGuildGeneralInfo — Guild membership
 
@@ -62,7 +60,6 @@
 
 **When it fires:** On login. Contains guild ID, name, and message of the day.
 
-**NOT YET PARSED.**
 
 ### ProcessErrorMessage — Game error
 
@@ -72,7 +69,6 @@
 
 **When it fires:** Various game errors (e.g., entity no longer exists, can't perform action).
 
-**NOT YET PARSED.**
 
 ### ProcessTitlesList — Unlocked titles
 
@@ -82,7 +78,6 @@
 
 **When it fires:** On login. Contains list of title IDs the player has unlocked.
 
-**NOT YET PARSED.**
 
 ### ProcessBookList — Known books
 
@@ -92,7 +87,6 @@
 
 **When it fires:** On login. Contains list of book IDs the player has read.
 
-**NOT YET PARSED.**
 
 ### ProcessSetExtendedGuiFeatures — GUI feature flags
 
@@ -102,7 +96,6 @@
 
 **When it fires:** On login. GUI feature configuration from server.
 
-**NOT YET PARSED.**
 
 ### ProcessRedemptionCount — Redemption/loyalty points
 
@@ -112,7 +105,6 @@
 
 **When it fires:** On login. Current redemption point count.
 
-**NOT YET PARSED.**
 
 ### ProcessToolCommandResponse — Tool command result
 
@@ -122,7 +114,6 @@
 
 **When it fires:** Response to a tool command (e.g., `/outputcharacter`).
 
-**NOT YET PARSED.**
 
 ### ProcessShowStable — Stable UI
 
@@ -132,7 +123,6 @@
 
 **When it fires:** Player opens the animal stable UI. Contains stable slot data, animal IDs, and names.
 
-**NOT YET PARSED.**
 
 ### ProcessPlayerVendorScreen — Player shop inventory
 
@@ -142,7 +132,6 @@
 
 **When it fires:** Player opens their own vendor stall management UI.
 
-**NOT YET PARSED.**
 
 ### ProcessPlayerVendorScreenUpdate — Player shop item update
 
@@ -152,7 +141,6 @@
 
 **When it fires:** Item added or price changed in player's vendor stall.
 
-**NOT YET PARSED.**
 
 ### ProcessPlayerVendorScreenRemove — Player shop item removed
 
@@ -162,7 +150,6 @@
 
 **When it fires:** Item removed from player's vendor stall.
 
-**NOT YET PARSED.**
 
 ### ProcessMapPinAdd — Map pin/marker added
 

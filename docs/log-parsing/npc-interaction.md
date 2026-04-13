@@ -103,7 +103,6 @@ Fires before each talk/prompt screen. Appears repeatedly during a single NPC con
 
 **When it fires:** First time interacting with a specific entity type (portals, etc.). Contains interaction metadata string.
 
-**NOT YET PARSED.**
 
 ### ProcessEnableInteractor — Interactable entities
 
@@ -113,7 +112,6 @@ Fires before each talk/prompt screen. Appears repeatedly during a single NPC con
 
 **When it fires:** On login/zone change. Lists entities that can be interacted with.
 
-**NOT YET PARSED.**
 
 ### ProcessBook — Display book or log content
 

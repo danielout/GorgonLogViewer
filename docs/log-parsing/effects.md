@@ -17,7 +17,7 @@
 - **Login** — large batch of all active effects with `sourceEntityId=0`, `boolFlag=False`
 - **During play** — smaller batches when buffs are applied, with `sourceEntityId=self`, `boolFlag=True`
 
-**Parsed** → `PlayerEvent::EffectsAdded`. Effect IDs are numeric — `ProcessUpdateEffectName` provides display names.
+**Note:** Effect IDs are numeric — `ProcessUpdateEffectName` provides display names.
 
 **Examples:**
 ```
@@ -37,7 +37,7 @@
 
 **When it fires:** When buffs expire or are dispelled. Fires on dismount and other state changes.
 
-**Parsed** → `PlayerEvent::EffectsRemoved` (signal-only — the `System.Int32[]` is C#'s opaque ToString(), so individual effect IDs cannot be extracted).
+**Note:** The `System.Int32[]` is C#'s opaque ToString() output, so individual effect IDs cannot be extracted from this event.
 
 ### ProcessUpdateEffectName — Effect display name
 
@@ -53,4 +53,3 @@
 
 **When it fires:** After an effect is applied, providing its display name.
 
-**Parsed** → `PlayerEvent::EffectNameUpdated`.

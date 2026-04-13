@@ -113,7 +113,6 @@ A single line containing every skill the player has, each as a comma-separated s
 
 **When it fires:** On login. Contains the set of recipe IDs the player has starred/favorited.
 
-**NOT YET PARSED.**
 
 ### ProcessSetRecipeReuseTimers — Recipe cooldowns
 
@@ -123,7 +122,6 @@ A single line containing every skill the player has, each as a comma-separated s
 
 **When it fires:** During play when recipe cooldowns are active. Contains recipe IDs and remaining cooldown times.
 
-**NOT YET PARSED.**
 
 ### ProcessShowRecipes — Recipe UI opened
 
@@ -133,7 +131,6 @@ A single line containing every skill the player has, each as a comma-separated s
 
 **When it fires:** Player opens the crafting recipe list for a specific skill (e.g., `Teleportation`).
 
-**NOT YET PARSED.**
 
 ### ProcessUpdateSkill — Skill XP/level update
 

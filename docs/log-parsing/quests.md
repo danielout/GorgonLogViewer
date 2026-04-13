@@ -8,7 +8,6 @@
 
 **When it fires:** A quest objective was completed or quest state changed. In the gift-giving context, this fires after a favor threshold is crossed (e.g., giving enough gifts unlocks a quest step).
 
-**NOT YET PARSED.**
 
 ### ProcessLoadQuests — Quest state on login
 
@@ -18,7 +17,6 @@
 
 **When it fires:** On login. Full quest state including active quests, completed objectives, etc.
 
-**NOT YET PARSED.**
 
 ### ProcessAddQuest — New quest acquired
 
@@ -28,7 +26,6 @@
 
 **When it fires:** Player accepts or triggers a new quest.
 
-**NOT YET PARSED.**
 
 ### ProcessCompleteQuest — Quest completed
 
@@ -38,7 +35,6 @@
 
 **When it fires:** Player completes a quest objective or turns in a quest.
 
-**NOT YET PARSED.**
 
 **Example:**
 ```
@@ -53,7 +49,6 @@
 
 **When it fires:** Player selects a quest to track in the quest tracker UI.
 
-**NOT YET PARSED.**
 
 ### ProcessCompleteDirectedGoals — Tutorial/directed goal completion
 
@@ -63,7 +58,6 @@
 
 **When it fires:** On login. List of completed tutorial/directed goals.
 
-**NOT YET PARSED.**
 
 ### ProcessFailQuest — Quest failed or abandoned
 

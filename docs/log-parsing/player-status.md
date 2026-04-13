@@ -103,7 +103,6 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 
 **When it fires:** After mounting, indicates whether mount XP can be earned in the current area.
 
-**NOT YET PARSED.**
 
 ### ProcessSetEquippedItems — Equipment state
 
@@ -119,7 +118,7 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 
 **When it fires:** On login, mount/dismount, and equipment changes. The appearance string contains slot-keyed equipment data.
 
-**Parsed** → `EquipmentChanged`. Extracts `entity_id`, full `appearance` string, and structured `equipment` slots. The three `System.Int32[]` arrays are opaque C# types (Unity prints type name only, not contents).
+**Note:** Contains `entity_id`, full `appearance` string, and structured `equipment` slots. The three `System.Int32[]` arrays are opaque C# types (Unity prints type name only, not contents).
 
 **Slot keys found in appearance string:**
 - `@Chest`, `@Head`, `@Legs`, `@Feet`, `@Hands` — armor slots
@@ -136,7 +135,6 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 
 **When it fires:** After equipment changes. Indicates which equipment slots are currently disabled.
 
-**NOT YET PARSED.**
 
 ### ProcessAddPlayer — Player appearance on login
 
@@ -146,7 +144,6 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 
 **When it fires:** On login. Contains the player's full appearance string, name, and description.
 
-**NOT YET PARSED.**
 
 ### ProcessSetString — String attribute
 
@@ -156,7 +153,6 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 
 **When it fires:** Sets named string values. Known keys: `HUNTING_GROUP_TITLE`.
 
-**NOT YET PARSED.**
 
 ### ProcessCombatModeStatus — Combat state
 
@@ -178,7 +174,6 @@ Relevant for features that depend on weather conditions (e.g., some Fletching re
 
 **When it fires:** Player initiates an attack.
 
-**NOT YET PARSED.**
 
 ### ProcessDeathMessage — Player death
 
