@@ -12,33 +12,54 @@
 
 ```
 src/
-  main.ts              — App entry: creates Vue app, registers router
-  App.vue              — Root layout: sidebar + router-view
+  main.ts              — App entry: creates Vue app, registers router (/ and /paired routes)
+  App.vue              — Root layout: sidebar + router-view, file open/close, tailing lifecycle
   styles.css           — Tailwind import + theme tokens (log type colors, UI colors)
   components/
-    Sidebar.vue        — File list, open/close/select files
-    FilterBar.vue      — Search (text/regex), type filter, timestamp range
-    LogViewer.vue      — Virtual-scrolled log line renderer with syntax highlighting
+    Sidebar.vue        — File list, open/close/select, view mode links, theme picker
+    FilterBar.vue      — Search (text/regex), type filter, timestamp range, entity ID, tail toggle
+    LogViewer.vue      — Virtual-scrolled log line renderer with syntax highlighting and hover tooltips
+    LineTooltip.vue    — Tooltip displaying event reference info on hover
+    JsonViewer.vue     — Top-level JSON file viewer
+    JsonNode.vue       — Recursive collapsible tree node for JSON data
+    ThemePicker.vue    — Theme selection dropdown with localStorage persistence
   views/
-    LogView.vue        — Main view: combines FilterBar + LogViewer, manages filter state
+    LogView.vue        — Single-file view: FilterBar + LogViewer, manages filter state
+    PairedView.vue     — Side-by-side view: two LogViewers with timestamp-synced scrolling
   lib/
-    types.ts           — Shared TypeScript types (LogLine, OpenFile, FilterState, LogLineType)
-    log-parser.ts      — Parses Player.log and Chat.log into structured LogLine arrays
-    tauri-bridge.ts    — Wrappers around Tauri invoke() calls
+    types.ts           — Shared TypeScript types (LogLine, OpenFile, FilterState, FileKind, LogLineType)
+    log-parser.ts      — Parses Player.log and Chat.log into structured LogLine arrays (full + incremental)
+    tauri-bridge.ts    — Wrappers around Tauri invoke() calls (read, tail start/stop, default path)
+    event-reference.ts — Dev quick reference data: event names, summaries, field lists
+    themes.ts          — Built-in theme definitions, apply/save/load helpers
 
 src-tauri/
-  src/lib.rs           — Tauri commands (read_log_file)
+  src/lib.rs           — Tauri commands: read_log_file, start_tailing, stop_tailing, get_default_log_path
 ```
 
 ## Data Flow
 
-1. User clicks "Open File" in Sidebar → triggers native file dialog via `@tauri-apps/plugin-dialog`
-2. Selected file path is sent to Rust backend via `read_log_file` command
-3. Raw content is parsed by `log-parser.ts` into `LogLine[]` (with timestamps, types, content)
-4. `LogView` holds the filter state; `FilterBar` emits filter changes
-5. Filtered lines are passed to `LogViewer` which renders them with virtual scrolling (only visible lines are in the DOM)
-6. Each line is color-coded by its `LogLineType` using Tailwind theme tokens
-7. Search matches are highlighted inline with `<mark>` tags
+1. On launch, checks for default Player.log via `get_default_log_path` and auto-opens with tailing
+2. User can also open files via Sidebar → native file dialog (log, txt, json)
+3. File content is read via Rust `read_log_file` command
+4. Log/txt files are parsed by `log-parser.ts` into `LogLine[]`; JSON files go to `JsonViewer`
+5. `LogView` holds filter state; `FilterBar` emits changes (search, type, time, entity ID)
+6. Filtered lines are passed to `LogViewer` which renders via virtual scrolling
+7. Each line is color-coded by `LogLineType` using theme tokens
+8. Hovering a line shows a `LineTooltip` with event reference info
+9. When tailing is active, Rust `notify` watcher emits new content via Tauri events; frontend appends parsed lines and auto-scrolls
+
+## Live Tailing
+
+The Rust backend uses the `notify` crate to watch files. On modify events, it reads bytes from the last known offset, emits new content via `tail-update` events, and the frontend parses/appends the new lines. The watcher monitors the parent directory to handle editors that write to temp files then rename.
+
+## Paired Browsing
+
+`PairedView` renders two `LogViewer` instances side by side. When sync scroll is enabled, scrolling one panel emits the timestamp of the center visible line; the other panel finds the closest matching timestamp and scrolls to it. Feedback loops are prevented via a `suppressEmit` flag.
+
+## Themes
+
+Three built-in themes (Catppuccin Mocha, Gorgon Dark, Light). Theme colors are applied as CSS custom properties on `:root`, which the Tailwind `@theme` tokens reference. Selection is persisted in `localStorage`.
 
 ## Log Parsing
 
