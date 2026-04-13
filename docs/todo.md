@@ -2,11 +2,6 @@
 
 ## Actionable Tasks
 
-### Viewer & Filtering
-- filter config: need a good way to be able to define filters and highlights for log lines that is easy to share/contribute/change.
-  - can we support live edit for this? that would be cool to be able to see what your config changes are doing in real time
-- view presets: create, edit, save, delete, share preset views for different types
-
 ### Packaging & Distribution
 - should bundle the samples with the app when we build for illustrative purposes.
   - probably want to scrub these samples and make sure nothing has any incredibly personal information - particularly in tells in the chat logs. unlikely, but should double check.
@@ -25,6 +20,8 @@
 - ~~app should remember its last size and location when it opens~~
 - ~~context-aware filters based on log type with expanded player.log event classification~~
 - ~~player.log: good set of default filters (35+ event patterns across 10 categories)~~
+- ~~filter config: shareable/editable filter definitions with custom highlights and live preview~~
+- ~~view presets: create, edit, save, delete, share preset views~~
 
 
 ## Need Investigation
