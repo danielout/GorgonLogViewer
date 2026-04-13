@@ -161,6 +161,52 @@ fn walk_sample_dir(dir: &std::path::Path, category: &str, files: &mut Vec<Sample
     }
 }
 
+#[derive(serde::Serialize)]
+struct FileEntry {
+    name: String,
+    path: String,
+    is_dir: bool,
+}
+
+/// Get the Project Gorgon AppData directory path
+#[tauri::command]
+fn get_pg_appdata_path() -> Option<String> {
+    let local_low = dirs::data_local_dir()?;
+    let local_low = local_low.parent()?.join("LocalLow");
+    let pg_dir = local_low.join("Elder Game").join("Project Gorgon");
+    if pg_dir.exists() {
+        Some(pg_dir.to_string_lossy().to_string())
+    } else {
+        None
+    }
+}
+
+/// List files and directories in a given path
+#[tauri::command]
+fn list_directory(path: String) -> Result<Vec<FileEntry>, String> {
+    let entries = fs::read_dir(&path)
+        .map_err(|e| format!("Failed to read directory {}: {}", path, e))?;
+
+    let mut result: Vec<FileEntry> = entries
+        .flatten()
+        .map(|entry| {
+            let path = entry.path();
+            FileEntry {
+                name: entry.file_name().to_string_lossy().to_string(),
+                path: path.to_string_lossy().to_string(),
+                is_dir: path.is_dir(),
+            }
+        })
+        .collect();
+
+    // Sort: directories first, then by name
+    result.sort_by(|a, b| {
+        b.is_dir.cmp(&a.is_dir).then(a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+    });
+
+    Ok(result)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -176,7 +222,9 @@ pub fn run() {
             read_log_file,
             start_tailing,
             stop_tailing,
-            list_sample_files
+            list_sample_files,
+            get_pg_appdata_path,
+            list_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

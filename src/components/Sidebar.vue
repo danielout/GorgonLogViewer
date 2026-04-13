@@ -33,29 +33,10 @@
         </button>
       </div>
 
-      <!-- Samples section -->
-      <div v-if="samplesByCategory.size > 0" class="mt-3">
-        <button
-          class="flex items-center gap-1 px-3 py-1 text-xs text-text-muted hover:text-text-secondary w-full text-left"
-          @click="showSamples = !showSamples"
-        >
-          <span class="w-3 text-center">{{ showSamples ? '▼' : '▶' }}</span>
-          Samples
-        </button>
-        <div v-if="showSamples" class="ml-2">
-          <div v-for="[category, files] in samplesByCategory" :key="category" class="mb-1">
-            <div class="px-3 py-0.5 text-xs text-text-muted">{{ category }}</div>
-            <div
-              v-for="sample in files"
-              :key="sample.path"
-              class="px-3 py-1 text-xs cursor-pointer text-text-secondary hover:bg-bg-hover hover:text-text-primary rounded truncate transition-colors"
-              :title="sample.name"
-              @click="$emit('openSample', sample.path)"
-            >
-              {{ sample.name }}
-            </div>
-          </div>
-        </div>
+      <!-- File browser -->
+      <div class="mt-3 border-t border-border/50 pt-2">
+        <div class="px-3 py-1 text-xs text-text-muted font-semibold uppercase tracking-wider">Files</div>
+        <FileBrowser @open-file="$emit('openSample', $event)" />
       </div>
     </nav>
 
@@ -89,10 +70,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
 import type { OpenFile } from "../lib/types";
-import { listSampleFiles, type SampleFile } from "../lib/tauri-bridge";
 import ThemePicker from "./ThemePicker.vue";
+import FileBrowser from "./FileBrowser.vue";
 
 defineProps<{
   openFiles: OpenFile[];
@@ -107,23 +87,5 @@ defineEmits<{
   toggleReference: [];
 }>();
 
-const samples = ref<SampleFile[]>([]);
-const showSamples = ref(false);
 
-const samplesByCategory = computed(() => {
-  const map = new Map<string, SampleFile[]>();
-  for (const s of samples.value) {
-    if (!map.has(s.category)) map.set(s.category, []);
-    map.get(s.category)!.push(s);
-  }
-  return map;
-});
-
-onMounted(async () => {
-  try {
-    samples.value = await listSampleFiles();
-  } catch {
-    // Samples may not be available in dev mode without resource bundling
-  }
-});
 </script>

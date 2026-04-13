@@ -6,6 +6,22 @@ export async function getDefaultLogPath(): Promise<string | null> {
   return invoke<string | null>("get_default_log_path");
 }
 
+/** Get the Project Gorgon AppData directory path */
+export async function getPgAppdataPath(): Promise<string | null> {
+  return invoke<string | null>("get_pg_appdata_path");
+}
+
+export interface FileEntry {
+  name: string;
+  path: string;
+  is_dir: boolean;
+}
+
+/** List files and directories at a given path */
+export async function listDirectory(path: string): Promise<FileEntry[]> {
+  return invoke<FileEntry[]>("list_directory", { path });
+}
+
 /** Read a log file's full content via the Rust backend */
 export async function readLogFile(path: string): Promise<string> {
   return invoke<string>("read_log_file", { path });
