@@ -35,6 +35,7 @@ Filters and reference material in the app is build from the docs, so adding supp
 - Default Logs
   - Defaults to opening the Player.log found in `AppData/LocalLow/Elder Game/Project Gorgon/` and starting live tailing mode. This can be changed in settings.
 
+## UsageSee the full [App Usage Guide](docs/app-usage.md) for details on filtering, paired view, reference pane, JSON viewer, themes, and more.## Contributing### Adding Event DocumentationThe app's reference pane, tooltips, and filter categories are all generated from the markdown docs in `docs/log-parsing/`. Adding support for a new event type is as simple as documenting it in the right markdown file — no code changes needed for most cases.See [Contributing Events](docs/contributing-events.md) for the full guide.### Development Setup```bashnpm install                  # install dependenciesnpm run dev                  # start vite dev servernpm run tauri dev            # start full tauri app in dev modenpm test                     # run testsnpm run build                # full build (generate + typecheck + vite)```### CI/CD- **CI**: Runs on every push/PR to main — typecheck, tests, frontend build, cargo check- **Release**: Push a `v*` tag to trigger a GitHub Actions build that creates a GitHub Release with Windows installers
 ## Commit Conventions
 
 All commit messages should be prefixed with a tag that categorizes the change. This drives automatic release note generation via `npm run release-notes`.

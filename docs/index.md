@@ -1,5 +1,10 @@
 # Doc Index
 
+## Guides
+
+- [app-usage.md](app-usage.md) — How to use the app (filtering, paired view, reference, themes, etc.)
+- [contributing-events.md](contributing-events.md) — How to add new event types to the documentation
+
 ## app-architecture/
 
 - [overview.md](app-architecture/overview.md) — Stack, project structure, data flow, and key design decisions
