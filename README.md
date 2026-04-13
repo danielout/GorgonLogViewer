@@ -11,6 +11,10 @@ Filters and reference material in the app are built from the docs, so adding sup
 - **Some portions copyright 2026 Elder Game, LLC**
 - Huge thanks to Citan and co for providing information for us 3rd party devs.
 
+## Screenshots
+![Log window with filters and reference](image.png)
+![Paired log view with sync'd scrolling](image-1.png)
+
 ## Features
 
 - **Filtering** — By event type, timestamp range, entity ID, text/regex search
