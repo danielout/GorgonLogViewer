@@ -24,12 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import type { LogLine, LogLineType } from "../lib/types";
 
 const props = defineProps<{
   lines: LogLine[];
   searchPattern: RegExp | null;
+  autoScroll?: boolean;
 }>();
 
 const LINE_HEIGHT = 24;
@@ -72,13 +73,29 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-// Reset scroll when lines change
-watch(() => props.lines, () => {
-  if (containerRef.value) {
+// Auto-scroll to bottom when tailing, reset scroll when lines array is replaced entirely
+let prevLinesRef: LogLine[] | null = null;
+watch(() => props.lines, (newLines) => {
+  if (!containerRef.value) return;
+
+  // Lines array replaced (different file or re-parse) — reset to top
+  if (prevLinesRef !== null && newLines !== prevLinesRef && !props.autoScroll) {
     containerRef.value.scrollTop = 0;
     scrollTop.value = 0;
   }
-});
+
+  // Auto-scroll to bottom when tailing
+  if (props.autoScroll) {
+    nextTick(() => {
+      if (containerRef.value) {
+        containerRef.value.scrollTop = containerRef.value.scrollHeight;
+        scrollTop.value = containerRef.value.scrollTop;
+      }
+    });
+  }
+
+  prevLinesRef = newLines;
+}, { deep: true });
 
 function lineTypeClass(type: LogLineType): string {
   const map: Partial<Record<LogLineType, string>> = {

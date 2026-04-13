@@ -11,21 +11,38 @@
       <router-view
         :active-file="activeFile"
         :open-files="openFiles"
+        @toggle-tailing="handleToggleTailing"
       />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
-import { readLogFile } from "./lib/tauri-bridge";
-import { parseLogFile } from "./lib/log-parser";
+import { readLogFile, startTailing, stopTailing, onTailUpdate } from "./lib/tauri-bridge";
+import { parseLogFile, parseLogLines } from "./lib/log-parser";
 import type { OpenFile, FileKind } from "./lib/types";
+import type { UnlistenFn } from "@tauri-apps/api/event";
 import Sidebar from "./components/Sidebar.vue";
 
 const openFiles = ref<OpenFile[]>([]);
 const activeFile = ref<string | null>(null);
+let unlistenTail: UnlistenFn | null = null;
+
+onMounted(async () => {
+  unlistenTail = await onTailUpdate((update) => {
+    const file = openFiles.value.find((f) => f.path === update.path);
+    if (!file || !file.tailing) return;
+    const newLines = parseLogLines(update.content, file.path, file.lines.length + 1);
+    file.lines.push(...newLines);
+    file.rawContent += update.content;
+  });
+});
+
+onUnmounted(() => {
+  unlistenTail?.();
+});
 
 function detectFileKind(fileName: string): FileKind {
   const ext = fileName.split(".").pop()?.toLowerCase();
@@ -64,12 +81,30 @@ async function handleOpenFile() {
     kind,
     lines,
     rawContent: content,
+    tailing: false,
   });
 
   activeFile.value = filePath;
 }
 
-function handleCloseFile(path: string) {
+async function handleToggleTailing(path: string) {
+  const file = openFiles.value.find((f) => f.path === path);
+  if (!file) return;
+
+  if (file.tailing) {
+    await stopTailing(path);
+    file.tailing = false;
+  } else {
+    await startTailing(path);
+    file.tailing = true;
+  }
+}
+
+async function handleCloseFile(path: string) {
+  const file = openFiles.value.find((f) => f.path === path);
+  if (file?.tailing) {
+    await stopTailing(path);
+  }
   const idx = openFiles.value.findIndex((f) => f.path === path);
   if (idx === -1) return;
   openFiles.value.splice(idx, 1);

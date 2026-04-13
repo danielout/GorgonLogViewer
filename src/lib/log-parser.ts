@@ -102,3 +102,34 @@ export function parseLogFile(content: string, filePath: string): LogLine[] {
 
   return lines;
 }
+
+/** Parse incremental content (new lines appended to a file) starting from a given line number */
+export function parseLogLines(content: string, filePath: string, startLineNumber: number): LogLine[] {
+  const rawLines = content.split(/\r?\n/);
+  const chatMode = isChatLog(filePath);
+  const tsPattern = chatMode ? CHAT_LOG_TS : PLAYER_LOG_TS;
+  const classify = chatMode ? classifyChatLogLine : classifyPlayerLogLine;
+
+  const lines: LogLine[] = [];
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const raw = rawLines[i];
+    if (raw.length === 0 && i === rawLines.length - 1) continue;
+
+    const tsMatch = raw.match(tsPattern);
+    const timestamp = tsMatch ? tsMatch[1] : null;
+    const contentStart = tsMatch ? tsMatch[0].length : 0;
+    const lineContent = raw.slice(contentStart);
+
+    lines.push({
+      lineNumber: startLineNumber + i,
+      raw,
+      timestamp,
+      timestampDate: timestamp ? parseTimestampDate(timestamp) : null,
+      type: timestamp ? classify(lineContent) : "system",
+      content: lineContent,
+    });
+  }
+
+  return lines;
+}

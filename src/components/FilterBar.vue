@@ -65,6 +65,18 @@
       @input="emitFilter"
     />
 
+    <!-- Tail toggle -->
+    <button
+      class="text-sm px-3 py-1.5 rounded border transition-colors"
+      :class="tailing
+        ? 'border-log-chat-global bg-log-chat-global/15 text-log-chat-global'
+        : 'border-border bg-bg-surface text-text-secondary hover:text-text-primary'"
+      title="Toggle live tailing"
+      @click="$emit('toggleTailing')"
+    >
+      {{ tailing ? 'Tailing' : 'Tail' }}
+    </button>
+
     <!-- Line count -->
     <span class="text-xs text-text-muted ml-auto whitespace-nowrap">
       {{ filteredCount }} / {{ totalCount }} lines
@@ -79,10 +91,12 @@ import type { LogLineType, FilterState } from "../lib/types";
 defineProps<{
   totalCount: number;
   filteredCount: number;
+  tailing: boolean;
 }>();
 
 const emit = defineEmits<{
   filter: [state: FilterState];
+  toggleTailing: [];
 }>();
 
 const ALL_TYPES: LogLineType[] = [

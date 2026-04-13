@@ -7,11 +7,14 @@
       <FilterBar
         :total-count="activeFileData.lines.length"
         :filtered-count="filteredLines.length"
+        :tailing="activeFileData.tailing"
         @filter="onFilter"
+        @toggle-tailing="$emit('toggleTailing', activeFileData!.path)"
       />
       <LogViewer
         :lines="filteredLines"
         :search-pattern="searchPattern"
+        :auto-scroll="activeFileData.tailing"
       />
     </template>
   </div>
@@ -33,6 +36,10 @@ import JsonViewer from "../components/JsonViewer.vue";
 const props = defineProps<{
   activeFile: string | null;
   openFiles: OpenFile[];
+}>();
+
+defineEmits<{
+  toggleTailing: [path: string];
 }>();
 
 const filter = ref<FilterState>({

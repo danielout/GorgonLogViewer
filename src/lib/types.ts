@@ -41,6 +41,7 @@ export interface OpenFile {
   kind: FileKind;
   lines: LogLine[];
   rawContent: string;
+  tailing: boolean;
 }
 
 /** Filter state for the log viewer */
