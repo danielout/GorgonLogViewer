@@ -253,10 +253,33 @@ function setCategoryRef(label: string, el: HTMLElement | null) {
   else categoryRefs.delete(label);
 }
 
-// Reset disabled events when file changes
-watch(() => props.availableTypes, () => {
-  disabledEvents.value = new Set();
-  enabledTypes.value = new Set(props.availableTypes);
+// Track the previous types to detect file changes vs. tailing additions
+let prevTypesKey = "";
+watch(() => props.availableTypes, (types) => {
+  const newKey = [...types].sort().join(",");
+  if (prevTypesKey === "") {
+    // Initial load — enable everything
+    enabledTypes.value = new Set(types);
+    prevTypesKey = newKey;
+    return;
+  }
+  // Check if this is a fundamentally new file (most types changed)
+  const prevTypes = prevTypesKey.split(",").filter(Boolean);
+  const prevSet = new Set(prevTypes);
+  const overlap = prevTypes.filter((t) => types.includes(t as LogLineType)).length;
+  const isSameFile = overlap > 0 && overlap >= prevSet.size * 0.5;
+
+  if (isSameFile) {
+    // Same file, possibly new types from tailing — add new types without resetting
+    for (const t of types) {
+      if (!prevSet.has(t)) enabledTypes.value.add(t);
+    }
+  } else {
+    // Different file — full reset
+    disabledEvents.value = new Set();
+    enabledTypes.value = new Set(types);
+  }
+  prevTypesKey = newKey;
 }, { immediate: true });
 
 interface EventGroup {
