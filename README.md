@@ -1,5 +1,7 @@
 # Gorgon Log Viewer
 
+# Overview 
+
 A basic application for viewing Project Gorgon log files including:
 - Player.log
 - Chat Logs
@@ -7,6 +9,13 @@ A basic application for viewing Project Gorgon log files including:
 - Character JSONs
 
 The goal is to help 3rd party app developers have a way to quickly search through logs and find the events relevant to them, and filter out the ones that aren't. Log files are often thousands of lines long with loads of information, and so a tool to alleviate some repetitive Notepad++ regex queries and the like was needed.
+
+Filters and reference material in the app is build from the docs, so adding support for more events or more details is as simple as editing some markdown.
+
+## Content note and thanks!
+
+- ** Some portions copyright 2026 Elder Game, LLC **
+- Huge thanks to Citan and co for providing information for us 3rd party devs. 
 
 ## Features
 
