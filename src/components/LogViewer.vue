@@ -13,6 +13,8 @@
           :key="line.lineNumber"
           class="flex hover:bg-bg-hover/50 px-4 group"
           :class="lineTypeClass(line.type)"
+          @mouseenter="showTooltip($event, line)"
+          @mouseleave="hideTooltip"
         >
           <span class="w-14 shrink-0 text-right pr-3 text-text-muted select-none">{{ line.lineNumber }}</span>
           <span v-if="line.timestamp" class="shrink-0 pr-3 text-log-timestamp select-none">{{ line.timestamp }}</span>
@@ -20,12 +22,15 @@
         </div>
       </div>
     </div>
+    <LineTooltip :info="tooltipInfo" :x="tooltipX" :y="tooltipY" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import type { LogLine, LogLineType } from "../lib/types";
+import { getEventInfo, type EventInfo } from "../lib/event-reference";
+import LineTooltip from "./LineTooltip.vue";
 
 const props = defineProps<{
   lines: LogLine[];
@@ -47,6 +52,29 @@ const endIndex = computed(() =>
 );
 const offsetY = computed(() => startIndex.value * LINE_HEIGHT);
 const visibleLines = computed(() => props.lines.slice(startIndex.value, endIndex.value));
+
+const tooltipInfo = ref<EventInfo | null>(null);
+const tooltipX = ref(0);
+const tooltipY = ref(0);
+
+function showTooltip(event: MouseEvent, line: LogLine) {
+  const info = getEventInfo(line.content, line.type);
+  if (!info) {
+    tooltipInfo.value = null;
+    return;
+  }
+  tooltipInfo.value = info;
+  // Position relative to the container
+  const rect = containerRef.value?.getBoundingClientRect();
+  if (rect) {
+    tooltipX.value = event.clientX - rect.left + 12;
+    tooltipY.value = event.clientY - rect.top + 12;
+  }
+}
+
+function hideTooltip() {
+  tooltipInfo.value = null;
+}
 
 function onScroll() {
   if (!containerRef.value) return;
