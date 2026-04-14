@@ -258,8 +258,11 @@ let prevTypesKey = "";
 watch(() => props.availableTypes, (types) => {
   const newKey = [...types].sort().join(",");
   if (prevTypesKey === "") {
-    // Initial load — enable everything
+    // Initial load — enable all types, but respect any restored disabled events
     enabledTypes.value = new Set(types);
+    if (disabledEvents.value.size > 0) {
+      syncEnabledTypes();
+    }
     prevTypesKey = newKey;
     return;
   }
@@ -432,7 +435,59 @@ function parseTimeInput(val: string): Date | null {
   return d;
 }
 
+const FILTER_STORAGE_KEY = "glv-last-filters";
+
+interface SavedFilterState {
+  search: string;
+  isRegex: boolean;
+  entityId: string;
+  timeFrom: string;
+  timeTo: string;
+  newestFirst: boolean;
+  disabledEvents: string[];
+}
+
+function saveFilterState() {
+  const state: SavedFilterState = {
+    search: searchText.value,
+    isRegex: isRegex.value,
+    entityId: entityId.value,
+    timeFrom: timeFrom.value,
+    timeTo: timeTo.value,
+    newestFirst: newestFirst.value,
+    disabledEvents: [...disabledEvents.value],
+  };
+  localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(state));
+}
+
+function restoreSavedFilterState() {
+  try {
+    const raw = localStorage.getItem(FILTER_STORAGE_KEY);
+    if (!raw) return;
+    const state: SavedFilterState = JSON.parse(raw);
+    searchText.value = state.search ?? "";
+    isRegex.value = state.isRegex ?? false;
+    entityId.value = state.entityId ?? "";
+    timeFrom.value = state.timeFrom ?? "";
+    timeTo.value = state.timeTo ?? "";
+    newestFirst.value = state.newestFirst ?? false;
+    if (state.disabledEvents?.length > 0) {
+      disabledEvents.value = new Set(state.disabledEvents);
+      syncEnabledTypes();
+    }
+  } catch {
+    // ignore corrupt state
+  }
+}
+
+// Restore saved filters on mount
+onMounted(() => {
+  restoreSavedFilterState();
+  emitFilter();
+});
+
 function emitFilter() {
+  saveFilterState();
   emit("filter", {
     search: searchText.value,
     isRegex: isRegex.value,
