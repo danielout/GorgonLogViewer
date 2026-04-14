@@ -183,14 +183,22 @@ const filteredLines = computed<LogLine[]>(() => {
     lines = lines.filter((l) => configSet.has(l.type));
   }
 
-  // Time filter
-  if (filter.value.timeFrom) {
+  // Time filter — for non-timestamped lines, use the nearest preceding timestamp
+  if (filter.value.timeFrom || filter.value.timeTo) {
     const from = filter.value.timeFrom;
-    lines = lines.filter((l) => !l.timestampDate || l.timestampDate >= from);
-  }
-  if (filter.value.timeTo) {
     const to = filter.value.timeTo;
-    lines = lines.filter((l) => !l.timestampDate || l.timestampDate <= to);
+    let lastSeenTime: Date | null = null;
+
+    lines = lines.filter((l) => {
+      if (l.timestampDate) {
+        lastSeenTime = l.timestampDate;
+      }
+      const effectiveTime = l.timestampDate ?? lastSeenTime;
+      if (!effectiveTime) return false; // no timestamp context yet — hide
+      if (from && effectiveTime < from) return false;
+      if (to && effectiveTime > to) return false;
+      return true;
+    });
   }
 
   // Entity ID filter
