@@ -18,12 +18,35 @@
           @mouseleave="hideTooltip"
         >
           <span class="w-14 shrink-0 text-right pr-3 text-text-muted select-none">{{ line.lineNumber }}</span>
-          <span class="w-36 shrink-0 pr-3 text-log-timestamp select-none">{{ formatTimestamp(line) }}</span>
+          <span
+            class="w-36 shrink-0 pr-3 text-log-timestamp select-none"
+            @contextmenu.prevent="showTimestampMenu($event, line)"
+          >{{ formatTimestamp(line) }}</span>
           <span class="whitespace-pre-wrap break-all min-w-0" v-html="highlightSearch(line.content, line)"></span>
         </div>
       </div>
     </div>
     <LineTooltip :info="tooltipInfo" :x="tooltipX" :y="tooltipY" @open-reference="$emit('openReference', $event)" />
+
+    <!-- Timestamp right-click menu -->
+    <div
+      v-if="tsMenuVisible"
+      class="absolute z-30 bg-bg-surface border border-border rounded shadow-lg py-1 min-w-36"
+      :style="{ top: tsMenuY + 'px', left: tsMenuX + 'px' }"
+    >
+      <button
+        class="block w-full text-left px-3 py-1.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+        @click="setTimestampStart"
+      >
+        Set as start time
+      </button>
+      <button
+        class="block w-full text-left px-3 py-1.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+        @click="setTimestampEnd"
+      >
+        Set as end time
+      </button>
+    </div>
   </div>
 </template>
 
@@ -108,7 +131,41 @@ const emit = defineEmits<{
   scrollToTime: [time: Date];
   openReference: [name: string];
   positionChange: [lineNumber: number | null, timestamp: string | null];
+  setTimeFrom: [timestamp: string];
+  setTimeTo: [timestamp: string];
 }>();
+
+const tsMenuVisible = ref(false);
+const tsMenuX = ref(0);
+const tsMenuY = ref(0);
+let tsMenuTimestamp = "";
+
+function showTimestampMenu(event: MouseEvent, line: LogLine) {
+  if (!line.timestamp) return;
+  tsMenuTimestamp = line.timestamp;
+  const rect = containerRef.value?.getBoundingClientRect();
+  if (rect) {
+    tsMenuX.value = event.clientX - rect.left;
+    tsMenuY.value = event.clientY - rect.top;
+  }
+  tsMenuVisible.value = true;
+
+  const dismiss = () => {
+    tsMenuVisible.value = false;
+    document.removeEventListener("click", dismiss);
+  };
+  setTimeout(() => document.addEventListener("click", dismiss), 0);
+}
+
+function setTimestampStart() {
+  emit("setTimeFrom", tsMenuTimestamp);
+  tsMenuVisible.value = false;
+}
+
+function setTimestampEnd() {
+  emit("setTimeTo", tsMenuTimestamp);
+  tsMenuVisible.value = false;
+}
 
 let suppressEmit = false;
 

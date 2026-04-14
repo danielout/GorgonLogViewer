@@ -50,6 +50,8 @@
           :timezone-offset-ms="activeFileData.timezoneOffsetMs"
           @open-reference="openReference($event)"
           @position-change="onPositionChange"
+          @set-time-from="filterBarRef?.setTimeFrom($event)"
+          @set-time-to="filterBarRef?.setTimeTo($event)"
         />
         <FilterConfigPanel
           v-if="showConfigPanel"

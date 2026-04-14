@@ -425,7 +425,24 @@ function restoreFromPreset(preset: ViewPreset) {
   emitFilter();
 }
 
-defineExpose({ getCurrentState, restoreFromPreset });
+/** Extract HH:MM:SS from a timestamp string */
+function extractTime(ts: string): string {
+  // Chat log: "YY-MM-DD HH:MM:SS" → extract the time part
+  const match = ts.match(/(\d{2}:\d{2}:\d{2})/);
+  return match ? match[1] : ts;
+}
+
+function setTimeFrom(ts: string) {
+  timeFrom.value = extractTime(ts);
+  emitFilter();
+}
+
+function setTimeTo(ts: string) {
+  timeTo.value = extractTime(ts);
+  emitFilter();
+}
+
+defineExpose({ getCurrentState, restoreFromPreset, setTimeFrom, setTimeTo });
 
 function parseTimeInput(val: string): Date | null {
   const m = val.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
