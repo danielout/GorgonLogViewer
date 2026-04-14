@@ -48,6 +48,18 @@ export async function listSampleFiles(): Promise<SampleFile[]> {
   return invoke<SampleFile[]>("list_sample_files");
 }
 
+export interface VersionInfo {
+  current: string;
+  latest: string | null;
+  update_available: boolean;
+  release_url: string | null;
+}
+
+/** Check GitHub for a newer version */
+export async function checkForUpdates(): Promise<VersionInfo> {
+  return invoke<VersionInfo>("check_for_updates");
+}
+
 export interface TailUpdate {
   path: string;
   content: string;

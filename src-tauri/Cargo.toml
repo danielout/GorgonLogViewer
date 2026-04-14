@@ -26,4 +26,5 @@ tauri-plugin-dialog = "2.7.0"
 notify = "7"
 dirs = "6.0.0"
 tauri-plugin-window-state = "2.4.1"
+reqwest = { version = "0.13.2", default-features = false, features = ["rustls", "json"] }
 

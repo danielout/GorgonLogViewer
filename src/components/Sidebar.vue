@@ -63,14 +63,28 @@
     <div class="p-2 border-t border-border">
       <ThemePicker />
     </div>
-    <div class="p-3 border-t border-border text-xs text-text-muted">
-      v0.1.0
+    <div class="p-3 border-t border-border text-xs">
+      <template v-if="versionInfo?.update_available">
+        <a
+          :href="versionInfo.release_url ?? '#'"
+          target="_blank"
+          class="text-accent hover:text-accent-hover cursor-pointer"
+          title="Click to download update"
+        >
+          v{{ versionInfo.current }} — v{{ versionInfo.latest }} available!
+        </a>
+      </template>
+      <span v-else class="text-text-muted">
+        v{{ versionInfo?.current ?? '...' }}
+      </span>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import type { OpenFile } from "../lib/types";
+import { checkForUpdates, type VersionInfo } from "../lib/tauri-bridge";
 import ThemePicker from "./ThemePicker.vue";
 import FileBrowser from "./FileBrowser.vue";
 
@@ -87,5 +101,14 @@ defineEmits<{
   toggleReference: [];
 }>();
 
+const versionInfo = ref<VersionInfo | null>(null);
 
+onMounted(async () => {
+  try {
+    versionInfo.value = await checkForUpdates();
+  } catch {
+    // Offline or API error — just show current version
+    versionInfo.value = { current: "0.1.0", latest: null, update_available: false, release_url: null };
+  }
+});
 </script>

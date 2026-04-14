@@ -54,7 +54,7 @@ npm run build                # full build (generate + typecheck + vite)
 ### CI/CD
 
 - **CI**: Runs on every push/PR to main — typecheck, tests, frontend build, cargo check
-- **Release**: Push a `v*` tag to trigger a GitHub Actions build that creates a GitHub Release with Windows installers
+- **Release**: Trigger via GitHub Actions `workflow_dispatch` — auto-bumps version, builds cross-platform (Windows, Linux, macOS), creates GitHub Release with download table
 
 ## Commit Conventions
 
@@ -81,9 +81,12 @@ chore(deps): update Tauri to v2.1
 
 ### Cutting a Release
 
+Releases are triggered via GitHub Actions:
+
 ```bash
-npm run release -- 0.2.0           # bump version, build, tag
-npm run release -- 0.2.0 --dry-run # preview without changes
+npm run release -- 0.2.0           # triggers GitHub Actions workflow
+npm run release -- 0.2.0 --dry-run # preview release notes only
+npm run release -- 0.2.0 --local   # build locally instead of CI
 ```
 
-Or push a `v*` tag to let GitHub Actions build and publish the release automatically.
+The workflow auto-bumps the version in all config files, builds for Windows/Linux/macOS, and creates a GitHub Release with a download table and categorized changelog.
