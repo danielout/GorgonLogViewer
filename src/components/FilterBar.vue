@@ -447,9 +447,13 @@ defineExpose({ getCurrentState, restoreFromPreset, setTimeFrom, setTimeTo });
 function parseTimeInput(val: string): Date | null {
   const m = val.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
   if (!m) return null;
-  const d = new Date();
-  d.setHours(parseInt(m[1]), parseInt(m[2]), parseInt(m[3] ?? "0"), 0);
-  return d;
+  // All timestamps are stored as UTC internally, so parse time inputs as UTC
+  const now = new Date();
+  const utcMs = Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    parseInt(m[1]), parseInt(m[2]), parseInt(m[3] ?? "0")
+  );
+  return new Date(utcMs);
 }
 
 const FILTER_STORAGE_KEY = "glv-last-filters";
