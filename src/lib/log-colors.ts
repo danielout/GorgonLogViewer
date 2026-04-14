@@ -21,6 +21,7 @@ const TYPE_COLOR_MAP: Record<LogLineType, string> = {
   skill: "text-log-skill",
   quest: "text-log-quest",
   interaction: "text-log-interaction",
+  p2p: "text-log-interaction",
   effect: "text-log-effect",
   attribute: "text-log-attribute",
   vendor: "text-log-vendor",

@@ -23,6 +23,7 @@ export type LogLineType =
   | "skill"
   | "quest"
   | "interaction"
+  | "p2p"
   | "effect"
   | "attribute"
   | "vendor"

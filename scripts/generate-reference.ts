@@ -340,7 +340,7 @@ function generateTypeScript(events: ParsedEvent[]): string {
     "Combat": ["combat"],
     "Vendors": ["vendor"],
     "World & UI": ["system", "unknown"],
-    "P2P Interaction": ["interaction"],
+    "P2P Interaction": ["p2p"],
     "Engine & Rendering": ["appearance"],
     "Non-Process Events": ["combat", "network", "audio", "error"],
     "Startup & System": ["asset", "network", "error"],

@@ -59,7 +59,7 @@ const PLAYER_EVENT_PATTERNS: [RegExp, LogLineType][] = [
   [/^LocalPlayer:\s*ProcessMountXpStatus/, "mount"],
   [/^LocalPlayer:\s*ProcessSetPet/, "mount"],
   // P2P interaction
-  [/^LocalPlayer:\s*ProcessP2P/, "interaction"],
+  [/^LocalPlayer:\s*ProcessP2P/, "p2p"],
   // Weather & celestial
   [/^LocalPlayer:\s*ProcessSetWeather/, "weather"],
   [/^LocalPlayer:\s*ProcessSetCelestialInfo/, "weather"],
@@ -121,6 +121,28 @@ const NON_PROCESS_PATTERNS: [RegExp, LogLineType, string][] = [
   [/^ProcessEmote/, "action", "ProcessEmote"],
   [/^ProcessUpdateDescription/, "system", "ProcessUpdateDescription"],
   [/^ProcessCommand /, "system", "ProcessCommand"],
+  // Session/login
+  [/^Logging chat to/, "network", "LoggingChat"],
+  [/^Loading Chat Tabs/, "network", "LoadChatTabs"],
+  [/^Saving Chat Tabs/, "network", "SaveChatTabs"],
+  [/^General Guild Info/, "network", "GuildInfo"],
+  [/^NOTE: processed message during loading/, "network", "QueuedMessage"],
+  [/^LOADING LEVEL/, "network", "LoadingLevel"],
+  // World state
+  [/^AreaConfig Setting weather/, "weather", "AreaWeather"],
+  [/^Set fog for map/, "system", "SetFog"],
+  [/^Removing effect from local player/, "effect", "RemoveLocalEffect"],
+  [/^Requested to show a blank floaty/, "system", "BlankFloaty"],
+  // System info (timestamped)
+  [/^OS:/, "asset", "SystemInfo"],
+  [/^Graphics Device:/, "asset", "SystemInfo"],
+  [/^Mem:/, "asset", "SystemInfo"],
+  [/^Factories are initialized/, "asset", "FactoryInit"],
+  [/^Applying special settings/, "asset", "Settings"],
+  [/^Setting quality level/, "asset", "Settings"],
+  // Particle/rendering warnings
+  [/^Cannot remove:.*particle/, "appearance", "ParticleWarning"],
+  [/^Animator/, "appearance", "AnimatorWarning"],
 ];
 
 /** Extract event name from a Process* line */
