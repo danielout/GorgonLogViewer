@@ -16,6 +16,7 @@
           :style="getHighlightStyle(line)"
           @mouseenter="showTooltip($event, line)"
           @mouseleave="hideTooltip"
+          @click="onLineClick($event, line)"
         >
           <span class="w-14 shrink-0 text-right pr-3 text-text-muted select-none">{{ line.lineNumber }}</span>
           <span
@@ -26,7 +27,7 @@
         </div>
       </div>
     </div>
-    <LineTooltip :info="tooltipInfo" :x="tooltipX" :y="tooltipY" @open-reference="$emit('openReference', $event)" />
+    <LineTooltip :info="tooltipInfo" :x="tooltipX" :y="tooltipY" />
 
     <!-- Timestamp right-click menu -->
     <div
@@ -106,6 +107,15 @@ const visibleLines = computed(() => props.lines.slice(startIndex.value, endIndex
 const tooltipInfo = ref<EventInfo | null>(null);
 const tooltipX = ref(0);
 const tooltipY = ref(0);
+
+function onLineClick(event: MouseEvent, line: LogLine) {
+  if (event.ctrlKey || event.metaKey) {
+    const info = getEventInfo(line.content, line.type);
+    if (info) {
+      emit("openReference", info.name);
+    }
+  }
+}
 
 function showTooltip(event: MouseEvent, line: LogLine) {
   const info = getEventInfo(line.content, line.type);
