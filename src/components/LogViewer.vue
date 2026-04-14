@@ -91,11 +91,12 @@ function showTooltip(event: MouseEvent, line: LogLine) {
     return;
   }
   tooltipInfo.value = info;
-  // Position relative to the container
+  // Position tooltip above the cursor so it doesn't cover the line
   const rect = containerRef.value?.getBoundingClientRect();
   if (rect) {
     tooltipX.value = event.clientX - rect.left + 12;
-    tooltipY.value = event.clientY - rect.top + 12;
+    // Place above the mouse; the LineTooltip uses `bottom` positioning
+    tooltipY.value = rect.bottom - event.clientY + 8;
   }
 }
 

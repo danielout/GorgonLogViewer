@@ -2,7 +2,7 @@
   <div
     v-if="info"
     class="absolute z-20 bg-bg-surface border border-border rounded shadow-lg p-3 max-w-md text-sm cursor-pointer hover:border-accent transition-colors"
-    :style="{ top: y + 'px', left: x + 'px' }"
+    :style="{ bottom: y + 'px', left: x + 'px' }"
     @click="$emit('openReference', info.name)"
   >
     <p class="font-bold text-accent mb-1">{{ info.name }}</p>
