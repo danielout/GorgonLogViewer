@@ -31,7 +31,7 @@
         :current-line="currentLine"
         :current-timestamp="currentTimestamp"
         @filter="onFilter"
-        @toggle-tailing="$emit('toggleTailing', activeFileData!.path)"
+        @toggle-tailing="toggleTailing(activeFileData!.path)"
         @toggle-config="showConfigPanel = !showConfigPanel"
         @save-preset="onSavePreset"
         @load-preset="onLoadPreset"
@@ -48,7 +48,7 @@
           :auto-scroll="activeFileData.tailing"
           :time-display="timeDisplay"
           :timezone-offset-ms="activeFileData.timezoneOffsetMs"
-          @open-reference="$emit('openReference', $event)"
+          @open-reference="openReference($event)"
           @position-change="onPositionChange"
         />
         <FilterConfigPanel
@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, inject, nextTick } from "vue";
 import type { OpenFile, FilterState, FilterConfig, HighlightRule, ViewPreset, LogLine, LogLineType } from "../lib/types";
 import { analyzeCdnSchema } from "../lib/cdn-schema";
 import { loadPresets, savePresets, createPresetId } from "../lib/view-presets";
@@ -84,10 +84,8 @@ const props = defineProps<{
   openFiles: OpenFile[];
 }>();
 
-defineEmits<{
-  toggleTailing: [path: string];
-  openReference: [name: string];
-}>();
+const openReference = inject<(name: string) => void>("openReference", () => {});
+const toggleTailing = inject<(path: string) => void>("toggleTailing", () => {});
 
 const jsonViewMode = ref<"tree" | "schema">("tree");
 const showConfigPanel = ref(false);

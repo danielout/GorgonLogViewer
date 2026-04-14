@@ -14,8 +14,6 @@
         <router-view
           :active-file="activeFile"
           :open-files="openFiles"
-          @toggle-tailing="handleToggleTailing"
-          @open-reference="handleOpenReference"
         />
       </div>
       <ReferencePane v-if="showReference" ref="referencePaneRef" @close="showReference = false" />
@@ -24,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from "vue";
+import { ref, provide, nextTick, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getDefaultLogPath, readLogFile, startTailing, stopTailing, onTailUpdate } from "./lib/tauri-bridge";
 import { parseLogFile, parseLogLines, parseChatLogTimezoneOffset } from "./lib/log-parser";
@@ -44,6 +42,10 @@ async function handleOpenReference(name: string) {
   await nextTick();
   referencePaneRef.value?.scrollToEntry(name);
 }
+
+// Provide callbacks to child views (router-view doesn't forward events)
+provide("openReference", handleOpenReference);
+provide("toggleTailing", handleToggleTailing);
 let unlistenTail: UnlistenFn | null = null;
 
 onMounted(async () => {
