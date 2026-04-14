@@ -64,6 +64,8 @@ const props = defineProps<{
   searchPattern: RegExp | null;
   highlightRules?: HighlightRule[];
   autoScroll?: boolean;
+  /** When true, newest lines are at the top (affects tailing scroll direction) */
+  newestFirst?: boolean;
   /** "utc" shows raw timestamps, "local" converts UTC dates to local time */
   timeDisplay?: "utc" | "local";
   /** Timezone offset in ms (from chat log header) for local conversion */
@@ -224,12 +226,12 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-// Auto-scroll to bottom when tailing
+// Auto-scroll when tailing — to bottom normally, to top if newest-first
 watch(() => props.lines.length, () => {
   if (props.autoScroll && containerRef.value) {
     nextTick(() => {
       if (containerRef.value) {
-        containerRef.value.scrollTop = containerRef.value.scrollHeight;
+        containerRef.value.scrollTop = props.newestFirst ? 0 : containerRef.value.scrollHeight;
         scrollTop.value = containerRef.value.scrollTop;
       }
     });

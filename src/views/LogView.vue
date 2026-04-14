@@ -46,6 +46,7 @@
           :search-pattern="searchPattern"
           :highlight-rules="activeHighlightRules"
           :auto-scroll="activeFileData.tailing"
+          :newest-first="filter.newestFirst"
           :time-display="timeDisplay"
           :timezone-offset-ms="activeFileData.timezoneOffsetMs"
           @open-reference="openReference($event)"
